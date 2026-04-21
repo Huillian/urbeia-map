@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<!-- Design intent: clean public profile for a single hive, map + data card, minimal and focused -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caixa · Urbeia Map</title>
+  <meta name="description" content="Caixa de abelhas sem ferrão no mapa Urbeia." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    body { overflow: auto; }
+
+    /* ── PAGE ── */
+    .page {
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    /* ── HERO MAP ── */
+    #hive-map {
+      width: 100%;
+      height: 340px;
+      background: var(--bg);
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* ── HEADER ── */
+    .hive-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hive-title-group {}
+
+    .hive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .hive-badge.verified {
+      background: var(--orange-soft);
+      color: var(--orange);
+      border: 1px solid rgba(255,107,53,0.3);
+    }
+
+    .hive-badge.community {
+      background: var(--green-soft);
+      color: var(--green);
+      border: 1px solid rgba(6,214,160,0.3);
+    }
+
+    .hive-badge .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .hive-badge.verified .badge-dot { background: var(--orange); }
+    .hive-badge.community .badge-dot { background: var(--green); }
+
+    .hive-name {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 32px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .hive-scientific {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      font-style: italic;
+    }
+
+    /* ── SPECIES PILL ── */
+    .species-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+    }
+
+    .species-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .species-pill-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ── INFO GRID ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+    }
+
+    .info-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .info-value.orange { color: var(--orange); }
+
+    .info-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── RADIUS DISCLAIMER ── */
+    .radius-disclaimer {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(245,197,24,0.06);
+      border: 1px solid rgba(245,197,24,0.15);
+      border-radius: var(--radius-sm);
+      margin-bottom: 24px;
+    }
+
+    .radius-disclaimer-icon {
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .radius-disclaimer-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── PHOTO ── */
+    .hive-photo {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    /* ── NOTE ── */
+    .note-block {
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: var(--radius-sm);
+      margin-bottom: 24px;
+    }
+
+    .note-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .note-text {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ── APPROX NOTICE ── */
+    .approx-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+      margin-bottom: 24px;
+    }
+
+    /* ── META ROW ── */
+    .meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta-row:last-child { border-bottom: none; }
+
+    .meta-key {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .meta-val {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── CTA ── */
+    .cta-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .cta-emoji { font-size: 28px; margin-bottom: 10px; }
+
+    .cta-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .cta-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      padding: 11px 24px;
+      background: var(--orange);
+      color: #0a0a0e;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+    }
+
+    .cta-btn:hover {
+      box-shadow: 0 6px 18px rgba(255,107,53,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ── LOADING / ERROR / NOT FOUND ── */
+    .state-screen {
+      min-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .state-icon { font-size: 40px; }
+
+    .state-title {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 24px;
+      color: var(--text);
+    }
+
+    .state-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .btn-back {
+      margin-top: 8px;
+      display: inline-block;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+    }
+
+    .btn-back:hover { border-color: var(--border-strong); color: var(--text); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      #hive-map { height: 240px; }
+      .hive-name { font-size: 26px; }
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+      .content { padding: 24px 16px 64px; }
+    }
+
+    @media (max-width: 400px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOPBAR ─────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+      <div class="brand-logo" aria-hidden="true">🐝</div>
+      <span class="brand-text">Urbeia <em>Map</em></span>
+    </a>
+  </div>
+  <nav class="topbar-right">
+    <a href="index.html" class="nav-link">← Voltar ao mapa</a>
+    <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
+  </nav>
+</header>
+
+<!-- ── LOADING ────────────────────────────────── -->
+<div id="screen-loading" class="state-screen">
+  <div class="state-icon" aria-hidden="true">🐝</div>
+  <p class="state-sub" style="font-family:var(--font-mono);font-size:12px;letter-spacing:0.06em;color:var(--text-muted);">carregando...</p>
+</div>
+
+<!-- ── NOT FOUND ──────────────────────────────── -->
+<div id="screen-notfound" class="state-screen" style="display:none;">
+  <div class="state-icon" aria-hidden="true">🍯</div>
+  <h1 class="state-title">Caixa não encontrada</h1>
+  <p class="state-sub">Esta caixa não existe ou ainda não foi aprovada.</p>
+  <a href="index.html" class="btn-back">Ver o mapa</a>
+</div>
+
+<!-- ── HIVE PAGE ───────────────────────────────── -->
+<div id="screen-hive" style="display:none;">
+
+  <!-- Mini map -->
+  <div id="hive-map" aria-label="Localização da caixa no mapa"></div>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- Header -->
+    <div class="hive-header">
+      <div class="hive-title-group">
+        <div class="hive-badge" id="hive-badge">
+          <span class="badge-dot"></span>
+          <span id="badge-text"></span>
+        </div>
+        <h1 class="hive-name" id="hive-name"></h1>
+        <p class="hive-scientific" id="hive-scientific"></p>
+      </div>
+      <div class="species-pill" id="species-pill" style="display:none;">
+        <span class="species-dot" id="species-dot"></span>
+        <span class="species-pill-name" id="species-pill-name"></span>
+      </div>
+    </div>
+
+    <!-- Foto -->
+    <img id="hive-photo" class="hive-photo" alt="Foto da caixa" style="display:none;" loading="lazy" />
+
+    <!-- Info grid -->
+    <div class="info-grid" id="info-grid">
+      <div class="info-card" id="card-radius" style="display:none;">
+        <div class="info-label">Raio de polinização</div>
+        <div class="info-value orange" id="info-radius"></div>
+        <div class="info-sub">estimativa</div>
+      </div>
+      <div class="info-card" id="card-size" style="display:none;">
+        <div class="info-label">Tamanho</div>
+        <div class="info-value" id="info-size"></div>
+        <div class="info-sub">comprimento</div>
+      </div>
+      <div class="info-card" id="card-honey" style="display:none;">
+        <div class="info-label">Mel / ano</div>
+        <div class="info-value" id="info-honey"></div>
+        <div class="info-sub">estimativa</div>
+      </div>
+    </div>
+
+    <!-- Radius disclaimer -->
+    <div class="radius-disclaimer" id="radius-disclaimer" style="display:none;">
+      <span class="radius-disclaimer-icon" aria-hidden="true">⚠</span>
+      <span class="radius-disclaimer-text">
+        Raio de polinização é uma <strong>estimativa baseada em literatura científica</strong>.
+        Valores reais variam com flora local, topografia, clima e tamanho da colônia.
+      </span>
+    </div>
+
+    <!-- Approx notice -->
+    <div class="approx-notice" id="approx-notice" style="display:none;">
+      <span aria-hidden="true">◎</span>
+      <span>Localização aproximada — deslocada ~200m por privacidade</span>
+    </div>
+
+    <!-- Note -->
+    <div class="note-block" id="note-block" style="display:none;">
+      <div class="note-label">Sobre esta caixa</div>
+      <p class="note-text" id="hive-note"></p>
+    </div>
+
+    <!-- Meta -->
+    <div class="meta-list" id="meta-list"></div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <div class="cta-emoji" aria-hidden="true">🐝</div>
+      <p class="cta-title">Tem uma caixa em casa?</p>
+      <p class="cta-text">Coloque sua caixa no mapa e ajude a mostrar a cobertura de polinização na sua região.</p>
+      <a href="cadastrar.html" class="cta-btn">Cadastrar minha caixa</a>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── SCRIPTS ────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+
+<script>
+  const CACADOR = [-26.7749, -51.0156];
+
+  function computeDisplayCoords(hive) {
+    if (!hive.approximate_location) return [hive.lat, hive.lng];
+    const offsetLat = (Math.random() - 0.5) * 0.004;
+    const offsetLng = (Math.random() - 0.5) * 0.004;
+    return [parseFloat(hive.lat) + offsetLat, parseFloat(hive.lng) + offsetLng];
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return null;
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+  }
+
+  function show(id) { document.getElementById(id).style.display = ''; }
+  function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+  function setMeta(rows) {
+    const list = document.getElementById('meta-list');
+    list.innerHTML = '';
+    rows.forEach(([key, val]) => {
+      if (!val) return;
+      const row = document.createElement('div');
+      row.className = 'meta-row';
+      row.innerHTML = `
+        <span class="meta-key">${key}</span>
+        <span class="meta-val">${val}</span>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const slug   = params.get('slug');
+
+    if (!slug) { hide('screen-loading'); show('screen-notfound'); return; }
+
+    let hive, species = null;
+
+    try {
+      hive = await window.urbeiaDB.getHiveBySlug(slug);
+    } catch {
+      hide('screen-loading'); show('screen-notfound'); return;
+    }
+
+    if (!hive) { hide('screen-loading'); show('screen-notfound'); return; }
+
+    // Update page title + meta
+    const title = hive.nickname || (hive.is_urbeia_verified ? 'Caixa Urbeia' : 'Caixa comunitária');
+    document.title = `${title} · Urbeia Map`;
+    document.querySelector('meta[name="description"]').setAttribute(
+      'content',
+      `Caixa de abelhas sem ferrão em ${hive.city || 'SC'} — Urbeia Map`
+    );
+
+    // Fetch species data
+    try {
+      const allSpecies = await window.urbeiaDB.getSpecies();
+      species = allSpecies.find(s => s.slug === hive.species_slug) || null;
+    } catch { /* non-critical */ }
+
+    // ── Badge ──
+    const badge = document.getElementById('hive-badge');
+    badge.classList.add(hive.is_urbeia_verified ? 'verified' : 'community');
+    document.getElementById('badge-text').textContent = hive.is_urbeia_verified ? 'Urbeia Verified' : 'Community';
+
+    // ── Name & scientific ──
+    document.getElementById('hive-name').textContent = title;
+    if (species) {
+      document.getElementById('hive-scientific').textContent = species.name_scientific;
+    }
+
+    // ── Species pill ──
+    if (species) {
+      document.getElementById('species-dot').style.background = species.color_hex;
+      document.getElementById('species-pill-name').textContent = species.name_pt;
+      show('species-pill');
+    }
+
+    // ── Photo ──
+    if (hive.photo_url) {
+      const img = document.getElementById('hive-photo');
+      img.src = hive.photo_url;
+      show('hive-photo');
+    }
+
+    // ── Info cards ──
+    if (species?.pollination_radius_m) {
+      document.getElementById('info-radius').textContent = `${species.pollination_radius_m}m`;
+      document.getElementById('card-radius').style.display = 'block';
+      show('radius-disclaimer');
+    }
+    if (species?.size_mm) {
+      document.getElementById('info-size').textContent = `${species.size_mm}mm`;
+      document.getElementById('card-size').style.display = 'block';
+    }
+    if (species?.honey_yield_l_year) {
+      document.getElementById('info-honey').textContent = `${species.honey_yield_l_year}L`;
+      document.getElementById('card-honey').style.display = 'block';
+    }
+
+    // ── Approx notice ──
+    if (hive.approximate_location) show('approx-notice');
+
+    // ── Note ──
+    if (hive.note) {
+      document.getElementById('hive-note').textContent = hive.note;
+      show('note-block');
+    }
+
+    // ── Meta list ──
+    setMeta([
+      ['Espécie',      species ? `${species.name_pt} (${species.name_scientific})` : null],
+      ['Cidade',       hive.city ? `${hive.city}, ${hive.state || 'SC'}` : null],
+      ['Criador',      hive.owner_name || null],
+      ['Instalada em', formatDate(hive.installed_at)],
+    ]);
+
+    // ── Mini map ──
+    const coords = computeDisplayCoords(hive);
+    const map = L.map('hive-map', {
+      center: coords,
+      zoom: 15,
+      zoomControl: false,
+      scrollWheelZoom: false,
+      dragging: false,
+      doubleClickZoom: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+    }).addTo(map);
+
+    // Pollination circle
+    if (species?.pollination_radius_m) {
+      L.circle(coords, {
+        radius: species.pollination_radius_m,
+        color: species.color_hex,
+        fillColor: species.color_hex,
+        fillOpacity: 0.07,
+        weight: 1.5,
+        opacity: 0.5,
+      }).addTo(map);
+    }
+
+    // Pin
+    const pinColor = hive.is_urbeia_verified ? '#ff6b35' : '#06d6a0';
+    L.marker(coords, {
+      icon: L.divIcon({
+        html: `<div style="width:18px;height:18px;background:${pinColor};border-radius:50%;border:2.5px solid #0a0a0e;box-shadow:0 0 0 2px ${pinColor}44,0 0 14px ${pinColor}88;"></div>`,
+        className: '',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      }),
+    }).addTo(map);
+
+    // Show page
+    hide('screen-loading');
+    show('screen-hive');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

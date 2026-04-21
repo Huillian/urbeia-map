@@ -34,6 +34,17 @@ window.urbeiaDB = {
     if (error) throw new Error(`submitHive: ${error.message}`);
   },
 
+  async getHiveBySlug(slug) {
+    const { data, error } = await _client
+      .from('hives')
+      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
+      .eq('public_slug', slug)
+      .eq('status', 'approved')
+      .single();
+    if (error) throw new Error(`getHiveBySlug: ${error.message}`);
+    return data;
+  },
+
   async uploadPhoto(file) {
     const ext  = file.name.split('.').pop().toLowerCase();
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;

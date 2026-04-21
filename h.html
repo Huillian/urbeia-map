@@ -620,6 +620,10 @@
       ['Instalada em', formatDate(hive.installed_at)],
     ]);
 
+    // Show page before map init — Leaflet needs visible container to calculate dimensions
+    hide('screen-loading');
+    show('screen-hive');
+
     // ── Mini map ──
     const coords = computeDisplayCoords(hive);
     const map = L.map('hive-map', {
@@ -660,9 +664,8 @@
       }),
     }).addTo(map);
 
-    // Show page
-    hide('screen-loading');
-    show('screen-hive');
+    // Force Leaflet to recalculate tile layout after container is visible
+    map.invalidateSize();
   }
 
   document.addEventListener('DOMContentLoaded', init);

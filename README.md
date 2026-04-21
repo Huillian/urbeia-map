@@ -105,27 +105,41 @@ Focadas em ASF nativas da região Oeste de SC, onde Caçador está localizada:
 
 ## 📍 Roadmap
 
-### v0 (em desenvolvimento — abril/maio 2026)
-- [x] Schema Supabase + seed espécies
-- [ ] Mapa público Leaflet
-- [ ] Círculos de polinização por espécie
-- [ ] Cadastro público com moderação
-- [ ] Painel admin
-- [ ] Deploy Vercel
+### v0 · MVP (em andamento — abril/maio 2026)
+
+**Semana 1 — Setup**
+- [x] Schema Supabase + seed 7 espécies
+- [x] Estrutura de arquivos + CI/CD Netlify
+
+**Semana 2 — Core**
+- [x] `index.html` — mapa público Leaflet com pins + círculos de polinização
+- [x] Filtros por espécie e tipo (Verified / Community)
+- [x] `cadastrar.html` — formulário público com pin no mapa, busca de endereço e geolocalização
+- [x] `admin.html` — painel de moderação com magic link auth (aprovar / rejeitar / verificar)
+- [x] Deploy em produção (`urbeia-map.netlify.app`)
+
+**Semana 3 — Polish**
+- [x] `h.html` — página pública de caixa individual (mini mapa + dados + foto)
+- [ ] SEO completo (meta tags, Open Graph por caixa)
+- [ ] Responsivo mobile completo
 - [ ] 10 primeiras caixas cadastradas
 
+**Semana 4 — Launch**
+- [ ] Domínio `map.urbeia.com.br`
+- [ ] Post de lançamento
+- [ ] Outreach EPAGRI Caçador
+
 ### v1 (junho/julho 2026)
-- [ ] Filtros avançados (espécie, status, cidade)
-- [ ] Perfil público do criador (`/h/:slug`)
-- [ ] Sharable card (imagem OG dinâmica)
+- [ ] Página pública de perfil do criador
+- [ ] Sharable card (imagem OG dinâmica por caixa)
 - [ ] Stats por cidade/região
-- [ ] Integração com domínio `map.urbeia.com.br`
+- [ ] Servidor de coordenadas com offset server-side (privacidade melhorada)
+- [ ] Notificação por e-mail ao criador quando aprovado
 
 ### v2 (depois)
 - [ ] Heatmap de cobertura
 - [ ] Calendário de floração por região
 - [ ] API pública (read-only) pra pesquisadores
-- [ ] Notificações por email
 - [ ] "Adote uma caixa" (apadrinhamento)
 
 ---

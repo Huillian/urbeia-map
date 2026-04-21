@@ -321,15 +321,25 @@ function initTableEvents() {
   });
 }
 
+const ADMIN_EMAIL = 'huilliancomercial@gmail.com';
+
 // ── Auth UI ────────────────────────────────────────────────────────
 function showLoginScreen() {
   document.getElementById('login-screen').style.display  = 'flex';
   document.getElementById('admin-panel').style.display   = 'none';
+  document.getElementById('access-denied').style.display = 'none';
 }
 
 function showAdminPanel() {
   document.getElementById('login-screen').style.display  = 'none';
   document.getElementById('admin-panel').style.display   = 'block';
+  document.getElementById('access-denied').style.display = 'none';
+}
+
+function showAccessDenied() {
+  document.getElementById('login-screen').style.display  = 'none';
+  document.getElementById('admin-panel').style.display   = 'none';
+  document.getElementById('access-denied').style.display = 'flex';
 }
 
 function initLogin() {
@@ -369,9 +379,11 @@ async function init() {
     if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newSession && !_booted) {
       _booted = true;
       _session = newSession;
-      // Clean URL hash after SDK has already read the token
       if (window.location.hash.includes('access_token')) {
         history.replaceState(null, '', window.location.pathname);
+      }
+      if (newSession.user.email !== ADMIN_EMAIL) {
+        showAccessDenied(); return;
       }
       showAdminPanel();
       await bootPanel();

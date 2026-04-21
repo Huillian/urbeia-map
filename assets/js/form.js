@@ -303,6 +303,9 @@ async function handleSubmit(e) {
       }
     }
 
+    const session = await window.urbeiaDB.getSession();
+    if (!session) { location.replace('login.html?next=cadastrar.html'); return; }
+
     const hiveData = {
       public_slug:          generateSlug(ownerName, city),
       species_slug:         speciesSlug,
@@ -317,6 +320,7 @@ async function handleSubmit(e) {
       owner_email:          ownerEmail || null,
       note:                 note || null,
       photo_url:            photoUrl,
+      user_id:              session.user.id,
     };
 
     await window.urbeiaDB.submitHive(hiveData);
@@ -332,6 +336,13 @@ async function handleSubmit(e) {
 
 // ── Init ──────────────────────────────────────────────────────────
 async function init() {
+  // Auth guard — redirect to login if not authenticated
+  const session = await window.urbeiaDB.getSession();
+  if (!session) {
+    location.replace('login.html?next=cadastrar.html');
+    return;
+  }
+
   initMap();
   initSearch();
   initGeolocation();

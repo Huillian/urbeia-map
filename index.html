@@ -34,9 +34,8 @@
       <span class="brand-sub">v0 · Caçador/SC</span>
     </div>
   </div>
-  <nav class="topbar-right" aria-label="Navegação principal">
-    <a href="#" class="nav-link">Sobre</a>
-    <a href="cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
+  <nav class="topbar-right" aria-label="Navegação principal" id="topbar-right">
+    <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
   </nav>
 </header>
 
@@ -124,6 +123,30 @@
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/species.js"></script>
 <script src="assets/js/map.js"></script>
+<script>
+  // Update topbar based on auth state
+  async function updateTopbar() {
+    const session = await window.urbeiaDB.getSession();
+    const nav = document.getElementById('topbar-right');
+    if (!nav) return;
+    if (session) {
+      const name = session.user.user_metadata?.full_name ||
+                   session.user.user_metadata?.name ||
+                   session.user.email?.split('@')[0] || '';
+      const safeName = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      nav.innerHTML = `
+        <a href="minhas-caixas.html" class="nav-link">Minhas caixas</a>
+        <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
+        <button class="nav-link" id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--text-dim);">Sair (${safeName})</button>
+      `;
+      document.getElementById('btn-signout').addEventListener('click', async () => {
+        await window.urbeiaDB.signOut();
+        location.reload();
+      });
+    }
+  }
+  document.addEventListener('DOMContentLoaded', updateTopbar);
+</script>
 
 </body>
 </html>

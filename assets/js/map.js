@@ -209,7 +209,8 @@ function showErrorToast(msg) {
 }
 
 async function initMap() {
-  _state.map = L.map('map', { center: CACADOR, zoom: 14, zoomControl: true });
+  _state.map = L.map('map', { center: CACADOR, zoom: 14, zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(_state.map);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom:     19,

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!-- Design intent: dark scientific map, organic/natural aesthetic, orange trust signal for Urbeia Verified hives -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Urbeia Map · Abelhas sem ferrão em Caçador/SC</title>
+  <meta name="description" content="Plataforma pública que mapeia caixas de abelhas sem ferrão em Santa Catarina. Veja a cobertura de polinização por espécie na sua região." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Urbeia Map · Abelhas sem ferrão em SC" />
+  <meta property="og:description" content="Mapeamento público de colmeias de abelhas sem ferrão. Dados abertos sobre polinização urbana em Santa Catarina." />
+  <meta property="og:type" content="website" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<!-- ── TOPBAR ─────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo" aria-hidden="true">🐝</div>
+    <div>
+      <span class="brand-text">Urbeia <em>Map</em></span>
+      <span class="brand-sub">v0 · Caçador/SC</span>
+    </div>
+  </div>
+  <nav class="topbar-right" aria-label="Navegação principal">
+    <a href="#" class="nav-link">Sobre</a>
+    <a href="cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
+  </nav>
+</header>
+
+<!-- ── SIDEBAR ────────────────────────────────── -->
+<aside class="sidebar" aria-label="Painel de filtros e estatísticas">
+
+  <!-- Stats -->
+  <section class="sidebar-section">
+    <div class="section-label">
+      <span class="dot-live" aria-hidden="true"></span>
+      Cobertura · ao vivo
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">—</div>
+        <div class="stat-label">Caixas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number accent" id="stat-verified">—</div>
+        <div class="stat-label">Urbeia Verified</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-species">—</div>
+        <div class="stat-label">Espécies</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tipo -->
+  <section class="sidebar-section">
+    <div class="section-label">Tipo</div>
+    <div class="filter-group">
+      <label class="filter-toggle">
+        <input type="checkbox" id="filter-verified" checked aria-label="Mostrar caixas Urbeia Verified" />
+        <span class="color-dot" style="background: var(--orange);" aria-hidden="true"></span>
+        <span class="label-text">Urbeia Verified</span>
+        <span class="count" id="count-verified">0</span>
+      </label>
+      <label class="filter-toggle">
+        <input type="checkbox" id="filter-community" checked aria-label="Mostrar caixas da comunidade" />
+        <span class="color-dot" style="background: var(--green);" aria-hidden="true"></span>
+        <span class="label-text">Community</span>
+        <span class="count" id="count-community">0</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- Espécies -->
+  <section class="sidebar-section">
+    <div class="section-label">Espécies</div>
+    <div class="species-grid" id="species-filters" aria-label="Filtrar por espécie">
+      <!-- Preenchido por map.js após carregar dados do Supabase -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="sidebar-footer">
+    <span>Open data · CC-BY 4.0</span>
+    <a href="https://github.com/Huillian/urbeia-map" target="_blank" rel="noopener" aria-label="Ver código no GitHub">GitHub ↗</a>
+  </footer>
+
+</aside>
+
+<!-- ── MAP ───────────────────────────────────── -->
+<main id="map" aria-label="Mapa de caixas de abelhas sem ferrão"></main>
+
+<!-- Loading overlay -->
+<div class="map-loading" id="map-loading" role="status" aria-live="polite">
+  <span class="map-loading-dot" aria-hidden="true"></span>
+  Carregando...
+</div>
+
+<!-- Error toast -->
+<div class="map-error" id="map-error" role="alert" aria-live="assertive"></div>
+
+<!-- Location badge -->
+<div class="location-badge" aria-hidden="true">
+  <span class="pin"></span>
+  <span>Caçador, SC · −26.77, −51.01</span>
+</div>
+
+<!-- ── SCRIPTS ────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/species.js"></script>
+<script src="assets/js/map.js"></script>
+
+</body>
+</html>

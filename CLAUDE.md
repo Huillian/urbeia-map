@@ -13,6 +13,12 @@ Plataforma web pública que mapeia caixas de abelhas sem ferrão (ASF) em Santa 
 - **Deploy:** Vercel (static)
 - **Fontes:** Geist + Geist Mono + Instrument Serif (Google Fonts)
 
+## Isolamento de projetos — CRÍTICO
+
+> O usuário possui outros projetos Supabase na conta (`PXTLISTAS` / `PXT Financeiro` / `BuscadorPXT`).
+> **NUNCA** usar, referenciar, modificar ou acessar qualquer recurso PXT neste projeto.
+> O Supabase do Urbeia Map é um projeto próprio e separado — criar do zero quando necessário.
+
 ## Leia antes de codar
 - `docs/ARCHITECTURE.md` para entender estrutura e decisões arquiteturais
 - `docs/CONVENTIONS.md` para estilo, naming e padrões de código

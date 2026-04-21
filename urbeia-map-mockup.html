@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Urbeia Map · Mapeamento de abelhas sem ferrão em SC</title>
+<meta name="description" content="Plataforma pública que mapeia caixas de abelhas sem ferrão em Santa Catarina. Veja a cobertura de polinização por espécie na sua região." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root {
+    --bg: #0a0a0e;
+    --bg-card: rgba(20, 20, 26, 0.85);
+    --bg-elevated: rgba(28, 28, 36, 0.95);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+
+    --text: #e5e5e5;
+    --text-dim: #9ca3af;
+    --text-muted: #6b7280;
+
+    --orange: #ff6b35;
+    --orange-soft: rgba(255, 107, 53, 0.15);
+    --green: #06d6a0;
+    --green-soft: rgba(6, 214, 160, 0.15);
+
+    --yellow: #f5c518;
+    --purple: #a78bfa;
+    --blue: #5b9eff;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Geist', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ====================
+     TOPBAR
+  ==================== */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: rgba(10, 10, 14, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange);
+    border-radius: 10px;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  }
+
+  .brand-text {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-text em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--orange);
+    font-size: 20px;
+    letter-spacing: 0;
+  }
+
+  .brand-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-left: 14px;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .btn-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--orange);
+    color: #0a0a0e;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .btn-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+  }
+
+  /* ====================
+     SIDEBAR
+  ==================== */
+  .sidebar {
+    position: fixed;
+    top: 76px;
+    left: 16px;
+    width: 320px;
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    z-index: 500;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  .sidebar-section {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .section-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-label .dot-live {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border-strong);
+  }
+
+  .stat-number {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-number.accent {
+    color: var(--orange);
+  }
+
+  .stat-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+  }
+
+  /* Filter toggles */
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+
+  .filter-toggle:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border-strong);
+  }
+
+  .filter-toggle input {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--orange);
+    cursor: pointer;
+  }
+
+  .filter-toggle .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .filter-toggle .label-text {
+    flex: 1;
+    color: var(--text);
+  }
+
+  .filter-toggle .count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Species chips */
+  .species-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .species-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+  }
+
+  .species-chip:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .species-chip input { display: none; }
+
+  .species-chip.active {
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .species-chip .color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .species-chip .name {
+    flex: 1;
+    color: var(--text);
+  }
+
+  .species-chip .radius {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Sidebar footer */
+  .sidebar-footer {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sidebar-footer a {
+    color: var(--orange);
+    text-decoration: none;
+  }
+
+  .sidebar-footer a:hover { text-decoration: underline; }
+
+  /* ====================
+     MAP
+  ==================== */
+  #map {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg);
+  }
+
+  /* Override Leaflet dark controls */
+  .leaflet-control-attribution {
+    background: rgba(10, 10, 14, 0.8) !important;
+    color: var(--text-muted) !important;
+    font-family: 'Geist Mono', monospace !important;
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+  }
+
+  .leaflet-control-attribution a {
+    color: var(--text-dim) !important;
+  }
+
+  .leaflet-control-zoom a {
+    background: var(--bg-card) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+    backdrop-filter: blur(10px);
+  }
+
+  .leaflet-control-zoom a:hover {
+    background: var(--bg-elevated) !important;
+  }
+
+  /* Leaflet popup customization */
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-elevated) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 240px;
+  }
+
+  .leaflet-popup-tip {
+    background: var(--bg-elevated) !important;
+  }
+
+  .leaflet-popup-close-button {
+    color: var(--text-muted) !important;
+    font-size: 24px !important;
+    padding: 6px 10px 0 0 !important;
+  }
+
+  .leaflet-popup-close-button:hover {
+    color: var(--text) !important;
+  }
+
+  /* Popup content */
+  .hive-popup {
+    padding: 16px;
+  }
+
+  .hive-popup .badge {
+    display: inline-block;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .hive-popup .badge-verified {
+    background: var(--orange-soft);
+    color: var(--orange);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+  }
+
+  .hive-popup .badge-community {
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1px solid rgba(6, 214, 160, 0.3);
+  }
+
+  .hive-popup h3 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .hive-popup h3 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--orange);
+  }
+
+  .hive-popup .species {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .hive-popup .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hive-popup .meta-row:last-of-type {
+    border-bottom: none;
+  }
+
+  .hive-popup .meta-row .label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hive-popup .meta-row .value {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .hive-popup .meta-row .value.orange {
+    color: var(--orange);
+    font-weight: 600;
+  }
+
+  .hive-popup .note {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid var(--orange);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* ====================
+     BOTTOM-LEFT ATTRIBUTION CARD
+  ==================== */
+  .location-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .location-badge .pin {
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--orange);
+    animation: pulse 2s infinite;
+  }
+
+  /* ====================
+     INTRO CARD (empty state demo)
+  ==================== */
+  .intro-card {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 300px;
+    padding: 16px 18px;
+    background: var(--bg-card);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    z-index: 500;
+  }
+
+  .intro-card .title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--orange);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .intro-card .text {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .intro-card .mini-cta {
+    display: inline-block;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--orange-soft);
+    padding-bottom: 2px;
+  }
+
+  .intro-card .mini-cta:hover {
+    border-bottom-color: var(--orange);
+  }
+
+  .intro-card .close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px;
+  }
+
+  .intro-card .close:hover {
+    color: var(--text);
+  }
+
+  /* ====================
+     RESPONSIVE
+  ==================== */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: calc(100% - 32px);
+      max-height: 40vh;
+      top: auto;
+      bottom: 20px;
+      left: 16px;
+      right: 16px;
+    }
+
+    .intro-card {
+      display: none;
+    }
+
+    .brand-sub {
+      display: none;
+    }
+  }
+
+  /* Custom pin (SVG-like via L.divIcon) */
+  .custom-pin {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid #0a0a0e;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .custom-pin.verified {
+    background: var(--orange);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.3), 0 0 16px rgba(255, 107, 53, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+    width: 20px;
+    height: 20px;
+  }
+
+  .custom-pin.community {
+    background: var(--green);
+  }
+
+  .custom-pin:hover {
+    transform: scale(1.2);
+  }
+
+  .custom-pin-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Pulse ring for verified pins */
+  .pin-pulse {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--orange);
+    opacity: 0;
+    animation: pinPulse 3s infinite;
+    pointer-events: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes pinPulse {
+    0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.3); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== TOPBAR ==================== -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">🐝</div>
+    <div>
+      <span class="brand-text">Urbeia <em>Map</em></span>
+      <span class="brand-sub">v0 · Caçador/SC</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="#" class="nav-link">Sobre</a>
+    <a href="#" class="nav-link">Espécies</a>
+    <button class="btn-cta">＋ Cadastrar caixa</button>
+  </div>
+</header>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+
+  <!-- STATS -->
+  <section class="sidebar-section">
+    <div class="section-label">
+      <span class="dot-live"></span>
+      Cobertura atual · ao vivo
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">12</div>
+        <div class="stat-label">Caixas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number accent" id="stat-verified">3</div>
+        <div class="stat-label">Urbeia Verified</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-species">5</div>
+        <div class="stat-label">Espécies</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIPO -->
+  <section class="sidebar-section">
+    <div class="section-label">Tipo</div>
+    <div class="filter-group">
+      <label class="filter-toggle">
+        <input type="checkbox" id="filter-verified" checked />
+        <span class="color-dot" style="background: var(--orange)"></span>
+        <span class="label-text">Urbeia Verified</span>
+        <span class="count">3</span>
+      </label>
+      <label class="filter-toggle">
+        <input type="checkbox" id="filter-community" checked />
+        <span class="color-dot" style="background: var(--green)"></span>
+        <span class="label-text">Community</span>
+        <span class="count">9</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- ESPÉCIES -->
+  <section class="sidebar-section">
+    <div class="section-label">Espécies</div>
+    <div class="species-grid" id="species-filters">
+      <!-- dynamically populated -->
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="sidebar-footer">
+    <span>Open data · CC-BY 4.0</span>
+    <a href="#">API ↗</a>
+  </footer>
+
+</aside>
+
+<!-- ==================== MAP ==================== -->
+<main id="map"></main>
+
+<!-- ==================== LOCATION BADGE ==================== -->
+<div class="location-badge">
+  <span class="pin"></span>
+  <span>Caçador, SC · −26.77, −51.01</span>
+</div>
+
+<!-- ==================== INTRO CARD ==================== -->
+<div class="intro-card" id="intro-card">
+  <button class="close" onclick="document.getElementById('intro-card').style.display='none'">×</button>
+  <div class="title">mockup preview</div>
+  <p class="text">Esse é um protótipo visual do Urbeia Map com 12 caixas fictícias em Caçador/SC pra demonstrar o conceito.</p>
+  <a href="#" class="mini-cta">Tentar clicar num pin →</a>
+</div>
+
+<script>
+  // =====================
+  // MOCK DATA
+  // =====================
+  const SPECIES = [
+    { slug: 'jatai',      name: 'Jataí',      scientific: 'Tetragonisca angustula',     radius: 500, color: '#f5c518' },
+    { slug: 'irai',       name: 'Iraí',       scientific: 'Nannotrigona testaceicornis', radius: 400, color: '#06d6a0' },
+    { slug: 'mandacaia',  name: 'Mandaçaia',  scientific: 'Melipona quadrifasciata',     radius: 900, color: '#a78bfa' },
+    { slug: 'bora',       name: 'Borá',       scientific: 'Tetragona clavipes',          radius: 600, color: '#5b9eff' },
+    { slug: 'mirim',      name: 'Mirim',      scientific: 'Plebeia spp.',                radius: 300, color: '#ff6b35' },
+  ];
+
+  const HIVES = [
+    // 🟠 Urbeia Verified (3 caixas espalhadas)
+    { id: 1, name: 'Jardim do Centro', species: 'jatai', lat: -26.7745, lng: -51.0145, verified: true,
+      owner: 'Urbeia', installed: '2024-06-01', note: 'Primeira caixa instalada pela Urbeia. Prova de conceito.' },
+    { id: 2, name: 'Praça da Cultura', species: 'mandacaia', lat: -26.7780, lng: -51.0200, verified: true,
+      owner: 'Urbeia', installed: '2024-11-15', note: 'Instalada em parceria com a prefeitura.' },
+    { id: 3, name: 'UNIARP Campus', species: 'jatai', lat: -26.7695, lng: -51.0085, verified: true,
+      owner: 'Urbeia + UNIARP', installed: '2025-02-10', note: 'Meliponário educacional da universidade.' },
+
+    // 🟢 Community (9 caixas de meliponicultores locais)
+    { id: 4, name: 'Quintal da Ana', species: 'jatai', lat: -26.7820, lng: -51.0120, verified: false,
+      owner: 'Ana M.', installed: '2023-09-01', note: 'Tô criando há 2 anos, caixa super ativa.' },
+    { id: 5, name: 'Sítio Boa Vista', species: 'mandacaia', lat: -26.7880, lng: -51.0280, verified: false,
+      owner: 'João R.', installed: '2022-11-20', note: null },
+    { id: 6, name: 'Casa da Vó', species: 'jatai', lat: -26.7660, lng: -51.0180, verified: false,
+      owner: 'Paulo S.', installed: '2024-03-15', note: 'Herdei a caixa da minha vó.' },
+    { id: 7, name: 'Fundo do Quintal', species: 'mirim', lat: -26.7750, lng: -51.0255, verified: false,
+      owner: 'Carla D.', installed: '2024-08-01', note: null },
+    { id: 8, name: 'Escola Municipal 3', species: 'irai', lat: -26.7710, lng: -51.0215, verified: false,
+      owner: 'Prof. Luiz', installed: '2024-05-10', note: 'Projeto educacional com os alunos.' },
+    { id: 9, name: 'Chácara do Seu Zé', species: 'bora', lat: -26.7920, lng: -51.0050, verified: false,
+      owner: 'Sr. José', installed: '2021-07-01', note: 'Crio há mais de 3 anos, abelhas super pacíficas.' },
+    { id: 10, name: 'Apê da Varanda', species: 'mirim', lat: -26.7800, lng: -51.0090, verified: false,
+      owner: 'Fernanda T.', installed: '2024-10-05', note: 'Primeira experiência, apê com varanda pequena.' },
+    { id: 11, name: 'Sítio das Flores', species: 'jatai', lat: -26.7620, lng: -51.0130, verified: false,
+      owner: 'Ricardo P.', installed: '2023-04-12', note: null },
+    { id: 12, name: 'Horta Comunitária', species: 'irai', lat: -26.7850, lng: -51.0180, verified: false,
+      owner: 'Coletivo Verde', installed: '2024-01-20', note: 'Caixa coletiva cuidada pelo grupo.' },
+  ];
+
+  const speciesMap = Object.fromEntries(SPECIES.map(s => [s.slug, s]));
+
+  // =====================
+  // MAP SETUP
+  // =====================
+  const CACADOR = [-26.7749, -51.0156];
+
+  const map = L.map('map', {
+    center: CACADOR,
+    zoom: 14,
+    zoomControl: true,
+    attributionControl: true,
+  });
+
+  // CartoDB Dark Matter
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '© OSM · © CARTO · 🐝 Urbeia Map',
+    subdomains: 'abcd',
+  }).addTo(map);
+
+  const hivesLayer = L.layerGroup().addTo(map);
+
+  // =====================
+  // FILTER STATE
+  // =====================
+  const activeFilters = {
+    verified: true,
+    community: true,
+    species: new Set(SPECIES.map(s => s.slug)), // todas ativas por padrão
+  };
+
+  // =====================
+  // RENDER HIVES
+  // =====================
+  function renderHives() {
+    hivesLayer.clearLayers();
+
+    HIVES.forEach(hive => {
+      // Aplicar filtros
+      const shouldShow =
+        ((hive.verified && activeFilters.verified) ||
+         (!hive.verified && activeFilters.community)) &&
+        activeFilters.species.has(hive.species);
+
+      if (!shouldShow) return;
+
+      const species = speciesMap[hive.species];
+      const color = hive.verified ? '#ff6b35' : '#06d6a0';
+
+      // Círculo de polinização
+      L.circle([hive.lat, hive.lng], {
+        radius: species.radius,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.08,
+        weight: 1.5,
+        opacity: 0.5,
+        dashArray: hive.verified ? null : '4 4',
+      }).addTo(hivesLayer);
+
+      // Pin customizado (com pulse pra verified)
+      const pinHtml = hive.verified
+        ? `<div class="custom-pin-wrapper"><div class="pin-pulse"></div><div class="custom-pin verified"></div></div>`
+        : `<div class="custom-pin community"></div>`;
+
+      const icon = L.divIcon({
+        html: pinHtml,
+        className: 'custom-pin-icon',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      const marker = L.marker([hive.lat, hive.lng], { icon }).addTo(hivesLayer);
+
+      // Popup
+      const popupHtml = `
+        <div class="hive-popup">
+          <span class="badge ${hive.verified ? 'badge-verified' : 'badge-community'}">
+            ${hive.verified ? '🟠 Urbeia Verified' : '🟢 Community'}
+          </span>
+          <h3>${hive.name.replace(/\b(\w+)$/, '<em>$1</em>')}</h3>
+          <div class="species">${species.scientific}</div>
+
+          <div class="meta-row">
+            <span class="label">Espécie</span>
+            <span class="value">${species.name}</span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Raio polinização</span>
+            <span class="value orange">${species.radius}m</span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Criador</span>
+            <span class="value">${hive.owner}</span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Instalada em</span>
+            <span class="value">${new Date(hive.installed).toLocaleDateString('pt-BR')}</span>
+          </div>
+
+          ${hive.note ? `<div class="note">"${hive.note}"</div>` : ''}
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, {
+        closeButton: true,
+        autoClose: true,
+        maxWidth: 280,
+      });
+    });
+
+    updateStats();
+  }
+
+  // =====================
+  // UPDATE STATS
+  // =====================
+  function updateStats() {
+    const visible = HIVES.filter(h => {
+      const typeOk = (h.verified && activeFilters.verified) ||
+                     (!h.verified && activeFilters.community);
+      const speciesOk = activeFilters.species.has(h.species);
+      return typeOk && speciesOk;
+    });
+
+    const total = visible.length;
+    const verified = visible.filter(h => h.verified).length;
+    const species = new Set(visible.map(h => h.species)).size;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-verified').textContent = verified;
+    document.getElementById('stat-species').textContent = species;
+  }
+
+  // =====================
+  // POPULATE SPECIES FILTERS
+  // =====================
+  function renderSpeciesFilters() {
+    const container = document.getElementById('species-filters');
+    container.innerHTML = SPECIES.map(s => {
+      const count = HIVES.filter(h => h.species === s.slug).length;
+      return `
+        <label class="species-chip active">
+          <input type="checkbox" value="${s.slug}" checked />
+          <span class="color-dot" style="background: ${s.color}"></span>
+          <span class="name">${s.name}</span>
+          <span class="radius">${s.radius}m</span>
+        </label>
+      `;
+    }).join('');
+
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const slug = e.target.value;
+        const chip = e.target.closest('.species-chip');
+        if (e.target.checked) {
+          activeFilters.species.add(slug);
+          chip.classList.add('active');
+        } else {
+          activeFilters.species.delete(slug);
+          chip.classList.remove('active');
+        }
+        renderHives();
+      });
+    });
+  }
+
+  // =====================
+  // WIRE UP FILTERS
+  // =====================
+  document.getElementById('filter-verified').addEventListener('change', (e) => {
+    activeFilters.verified = e.target.checked;
+    renderHives();
+  });
+
+  document.getElementById('filter-community').addEventListener('change', (e) => {
+    activeFilters.community = e.target.checked;
+    renderHives();
+  });
+
+  // =====================
+  // INIT
+  // =====================
+  renderSpeciesFilters();
+  renderHives();
+
+  // Open the first verified pin by default for demo effect
+  setTimeout(() => {
+    const firstVerified = HIVES.find(h => h.verified);
+    if (firstVerified) {
+      map.setView([firstVerified.lat, firstVerified.lng], 14);
+    }
+  }, 300);
+
+</script>
+</body>
+</html>

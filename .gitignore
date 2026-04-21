@@ -1,0 +1,30 @@
+# Secrets — nunca commitar
+.env
+.env.local
+.env.*.local
+*.env
+
+# Supabase service role / credentials
+supabase/.temp/
+supabase/config.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos de planejamento / duplicatas
+claude-code-environment-architect.md
+urbeia-map-docs/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node (se Supabase CLI for usado localmente)
+node_modules/

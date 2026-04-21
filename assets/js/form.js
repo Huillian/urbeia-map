@@ -144,7 +144,8 @@ function initGeolocation() {
 
 // ── Map init ──────────────────────────────────────────────────────
 function initMap() {
-  _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: true });
+  _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(_map);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,

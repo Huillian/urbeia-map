@@ -416,6 +416,143 @@
       color: var(--text);
     }
 
+    /* ── SEARCH BAR ── */
+    .search-container {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 600;
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      background: rgba(10, 10, 14, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--orange); }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .search-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: rgba(20, 20, 26, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.1s;
+    }
+
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(255,255,255,0.05); }
+
+    .result-name {
+      display: block;
+      font-size: 13px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-sub {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .search-result-empty {
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    /* ── GEOLOCATION BUTTON ── */
+    .btn-geolocate {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      background: rgba(10, 10, 14, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-geolocate:hover {
+      border-color: var(--orange);
+      background: rgba(255, 107, 53, 0.1);
+    }
+
+    .btn-geolocate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .geo-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border-strong);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
     /* ── FORM PIN ── */
     .form-pin {
       width: 20px; height: 20px;
@@ -463,6 +600,30 @@
 
   <!-- MAP PANEL -->
   <div class="map-panel">
+
+    <!-- Search + Geolocation -->
+    <div class="search-container" role="search">
+      <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          type="search"
+          class="search-input"
+          id="search-address"
+          placeholder="Buscar endereço ou bairro..."
+          autocomplete="off"
+          aria-label="Buscar endereço no mapa"
+        />
+        <div class="search-dropdown" id="search-dropdown" role="listbox" aria-label="Resultados da busca"></div>
+      </div>
+      <button
+        type="button"
+        class="btn-geolocate"
+        id="btn-geolocate"
+        title="Usar minha localização atual"
+        aria-label="Usar minha localização atual"
+      >📍</button>
+    </div>
+
     <div id="form-map" aria-label="Mapa para marcar localização da caixa"></div>
     <div class="pin-hint" id="pin-hint">Clique no mapa para marcar onde fica a caixa.</div>
   </div>

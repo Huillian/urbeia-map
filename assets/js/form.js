@@ -18,6 +18,130 @@ function generateSlug(ownerName, city) {
   return `${base}-${Date.now().toString(36)}`;
 }
 
+// ── Geocoding (Nominatim) ─────────────────────────────────────────
+let _searchTimer = null;
+
+async function searchAddress(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=br&addressdetails=1&email=map.urbeia.com.br`;
+  const res  = await fetch(url);
+  if (!res.ok) throw new Error('Nominatim error');
+  return res.json();
+}
+
+function initSearch() {
+  const input    = document.getElementById('search-address');
+  const dropdown = document.getElementById('search-dropdown');
+  if (!input || !dropdown) return;
+
+  input.addEventListener('input', () => {
+    clearTimeout(_searchTimer);
+    const q = input.value.trim();
+    if (q.length < 3) { closeDropdown(); return; }
+
+    _searchTimer = setTimeout(async () => {
+      try {
+        const results = await searchAddress(q);
+        renderDropdown(results);
+      } catch { closeDropdown(); }
+    }, 500); // respeita limite 1 req/s do Nominatim
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDropdown();
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-container')) closeDropdown();
+  });
+}
+
+function renderDropdown(results) {
+  const dropdown = document.getElementById('search-dropdown');
+  dropdown.innerHTML = '';
+
+  if (!results.length) {
+    const empty = document.createElement('div');
+    empty.className = 'search-result-empty';
+    empty.textContent = 'Nenhum resultado encontrado.';
+    dropdown.appendChild(empty);
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  results.forEach(r => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'search-result-item';
+
+    const name = document.createElement('span');
+    name.className = 'result-name';
+    // Nominatim result — safe to use textContent
+    name.textContent = r.display_name.split(',').slice(0, 3).join(',');
+
+    const sub = document.createElement('span');
+    sub.className = 'result-sub';
+    sub.textContent = r.display_name.split(',').slice(3).join(',').trim();
+
+    item.append(name, sub);
+
+    item.addEventListener('click', () => {
+      const lat = parseFloat(r.lat);
+      const lng = parseFloat(r.lon);
+      _map.setView([lat, lng], 17);
+      placePinAt(lat, lng);
+      document.getElementById('search-address').value = r.display_name.split(',')[0];
+      closeDropdown();
+    });
+
+    dropdown.appendChild(item);
+  });
+
+  dropdown.style.display = 'block';
+}
+
+function closeDropdown() {
+  const dropdown = document.getElementById('search-dropdown');
+  if (dropdown) dropdown.style.display = 'none';
+}
+
+// ── Geolocation ───────────────────────────────────────────────────
+function initGeolocation() {
+  const btn = document.getElementById('btn-geolocate');
+  if (!btn) return;
+
+  if (!navigator.geolocation) {
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.addEventListener('click', () => {
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = '<span class="geo-spinner" aria-hidden="true"></span>';
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        _map.setView([lat, lng], 17);
+        placePinAt(lat, lng);
+        btn.disabled = false;
+        btn.setAttribute('aria-busy', 'false');
+        btn.innerHTML = '📍';
+        btn.title = 'Localização usada!';
+      },
+      err => {
+        btn.disabled = false;
+        btn.setAttribute('aria-busy', 'false');
+        btn.innerHTML = '📍';
+        if (err.code === err.PERMISSION_DENIED) {
+          btn.title = 'Permissão de localização negada.';
+        }
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  });
+}
+
 // ── Map init ──────────────────────────────────────────────────────
 function initMap() {
   _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: true });
@@ -208,6 +332,8 @@ async function handleSubmit(e) {
 // ── Init ──────────────────────────────────────────────────────────
 async function init() {
   initMap();
+  initSearch();
+  initGeolocation();
   setupPhotoPreview();
 
   // Populate species select

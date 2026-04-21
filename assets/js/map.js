@@ -81,6 +81,12 @@ function buildPopup(hive, species) {
 
       ${note ? `<div class="note">"${note}"</div>` : ''}
 
+      ${hive.approximate_location ? `
+      <div class="approx-notice" title="A localização exata foi ocultada para proteger a privacidade do criador">
+        <span aria-hidden="true">◎</span>
+        <span>Localização aproximada · ±200m por privacidade</span>
+      </div>` : ''}
+
       ${slug ? `
       <div style="margin-top:12px;">
         <a href="h.html?slug=${slug}" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,107,53,0.3);padding-bottom:2px;">

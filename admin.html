@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<!-- Design intent: utilitarian admin dashboard, dark theme consistent with map, clarity over decoration -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Urbeia Map</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    body { overflow: auto; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .login-header { text-align: center; }
+
+    .login-bee {
+      font-size: 36px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .login-title {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 22px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+
+    .login-title em { color: var(--orange); }
+
+    .login-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+
+    .login-form { display: flex; flex-direction: column; gap: 12px; }
+
+    .login-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .login-input::placeholder { color: var(--text-muted); }
+    .login-input:focus { border-color: var(--orange); }
+
+    .btn-login {
+      padding: 12px;
+      background: var(--orange);
+      color: #0a0a0e;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+    }
+
+    .btn-login:hover:not(:disabled) {
+      box-shadow: 0 6px 18px rgba(255,107,53,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .login-msg {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-align: center;
+      letter-spacing: 0.04em;
+      min-height: 16px;
+    }
+
+    .login-msg.success { color: var(--green); }
+    .login-msg.error   { color: #fca5a5; }
+
+    /* ── ADMIN PANEL ── */
+    #admin-panel { display: none; }
+
+    /* ── TOPBAR ── */
+    .admin-topbar {
+      position: sticky;
+      top: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(10,10,14,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-brand-logo {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--orange);
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .admin-brand-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .admin-brand-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px 7px;
+    }
+
+    .admin-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-email {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-signout {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-dim);
+      font-size: 12px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-signout:hover { border-color: var(--border-strong); color: var(--text); }
+
+    /* ── MAIN ── */
+    .admin-main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    .admin-page-title {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 28px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .admin-page-title em { color: var(--orange); }
+
+    .admin-page-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-card.highlight-pending .stat-value { color: var(--yellow); }
+    .stat-card.highlight-verified .stat-value { color: var(--orange); }
+    .stat-card.highlight-approved .stat-value { color: var(--green); }
+
+    /* ── TABLE SECTION ── */
+    .table-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── FILTER TABS ── */
+    .filter-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 3px;
+    }
+
+    .filter-tab {
+      padding: 5px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .filter-tab:hover { color: var(--text); }
+
+    .filter-tab.active {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+    }
+
+    .pending-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      background: var(--yellow);
+      color: #0a0a0e;
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    tbody td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .col-info  { min-width: 180px; }
+    .col-species { min-width: 120px; }
+    .col-status  { min-width: 130px; }
+    .col-owner   { min-width: 120px; color: var(--text-dim); font-size: 13px; }
+    .col-actions { min-width: 130px; text-align: right; white-space: nowrap; }
+
+    .hive-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .hive-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .hive-email {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      opacity: 0.7;
+    }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-pending  { background: rgba(245,197,24,0.15);  color: var(--yellow); border: 1px solid rgba(245,197,24,0.25); }
+    .badge-approved { background: rgba(6,214,160,0.12);   color: var(--green);  border: 1px solid rgba(6,214,160,0.2); }
+    .badge-rejected { background: rgba(239,68,68,0.12);   color: #fca5a5;       border: 1px solid rgba(239,68,68,0.2); }
+    .badge-verified { background: var(--orange-soft);     color: var(--orange); border: 1px solid rgba(255,107,53,0.3); margin-left: 4px; }
+
+    .species-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .species-tag::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--species-color, var(--green));
+      flex-shrink: 0;
+    }
+
+    .species-tag.unknown { color: var(--text-muted); }
+
+    /* ── ACTION BUTTONS ── */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: 4px;
+    }
+
+    .btn-action:hover { border-color: var(--border-strong); color: var(--text); }
+
+    .btn-approve:hover { border-color: rgba(6,214,160,0.4);  background: rgba(6,214,160,0.08);  color: var(--green); }
+    .btn-reject:hover  { border-color: rgba(239,68,68,0.4);  background: rgba(239,68,68,0.08);  color: #fca5a5; }
+    .btn-verify:hover  { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.08); color: var(--orange); }
+    .btn-unverify:hover{ border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.08); color: var(--orange); opacity: 0.6; }
+    .btn-delete:hover  { border-color: rgba(239,68,68,0.4);  background: rgba(239,68,68,0.08);  color: #fca5a5; }
+    .btn-details       { font-size: 16px; letter-spacing: -1px; }
+
+    /* ── EMPTY STATE ── */
+    #table-empty {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      gap: 10px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon { font-size: 32px; }
+
+    .empty-text {
+      font-size: 13px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── DETAIL MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+
+    .modal-box::-webkit-scrollbar { width: 4px; }
+    .modal-box::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 0;
+      margin-bottom: 4px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .modal-close:hover { border-color: var(--border-strong); color: var(--text); }
+
+    .modal-body { padding: 16px 24px 24px; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .detail-field {}
+
+    .detail-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .detail-value.email-field {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--orange);
+    }
+
+    .detail-section-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 10px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-note {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    #detail-photo img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-top: 8px;
+    }
+
+    .no-photo {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rejection-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius-sm);
+    }
+
+    .rejection-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: #fca5a5;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .rejection-text {
+      font-size: 12px;
+      color: #fca5a5;
+    }
+
+    /* ── REJECT MODAL ── */
+    .reject-modal-box {
+      max-width: 420px;
+    }
+
+    .reject-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .reject-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 16px;
+    }
+
+    .reject-textarea:focus { border-color: #fca5a5; }
+    .reject-textarea::placeholder { color: var(--text-muted); }
+
+    .reject-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-reject-cancel {
+      padding: 9px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      font-size: 13px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-reject-cancel:hover { border-color: var(--border-strong); color: var(--text); }
+
+    .btn-reject-confirm {
+      padding: 9px 16px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-sm);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-reject-confirm:hover { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.5); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      padding: 10px 18px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-success { color: var(--green); border-color: rgba(6,214,160,0.3); }
+    .toast-error   { color: #fca5a5;     border-color: rgba(239,68,68,0.3); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .admin-email { display: none; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-main { padding: 20px 16px 48px; }
+      .table-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ───────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-bee" aria-hidden="true">🐝</div>
+      <h1 class="login-title">Urbeia <em>Admin</em></h1>
+      <p class="login-sub">acesso restrito · magic link</p>
+    </div>
+
+    <form class="login-form" id="login-form" novalidate>
+      <label for="login-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">E-mail</label>
+      <input
+        type="email"
+        class="login-input"
+        id="login-email"
+        placeholder="seu@email.com"
+        autocomplete="email"
+        required
+        aria-required="true"
+      />
+      <button type="submit" class="btn-login" id="btn-login">Enviar magic link</button>
+    </form>
+
+    <p class="login-msg" id="login-msg" role="status"></p>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ─────────────────────────────── -->
+<div id="admin-panel">
+
+  <!-- Topbar -->
+  <header class="admin-topbar">
+    <div class="admin-brand">
+      <div class="admin-brand-logo" aria-hidden="true">🐝</div>
+      <span class="admin-brand-text">Urbeia Map</span>
+      <span class="admin-brand-badge">ADMIN</span>
+    </div>
+    <div class="admin-topbar-right">
+      <span class="admin-email" id="admin-email"></span>
+      <a href="index.html" class="btn-signout" style="text-decoration:none;">Ver mapa</a>
+      <button class="btn-signout" id="btn-signout">Sair</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="admin-main">
+
+    <h1 class="admin-page-title">Moderação de <em>caixas</em></h1>
+    <p class="admin-page-sub">Aprove, rejeite e gerencie as caixas cadastradas pela comunidade.</p>
+
+    <!-- Stats -->
+    <div class="stats-row" role="region" aria-label="Resumo geral">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat-card highlight-pending">
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-value" id="stat-pending">—</div>
+      </div>
+      <div class="stat-card highlight-approved">
+        <div class="stat-label">Aprovadas</div>
+        <div class="stat-value" id="stat-approved">—</div>
+      </div>
+      <div class="stat-card highlight-verified">
+        <div class="stat-label">Verified</div>
+        <div class="stat-value" id="stat-verified">—</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-section">
+      <div class="table-header">
+        <span class="table-title">Caixas cadastradas</span>
+        <nav class="filter-tabs" aria-label="Filtrar por status">
+          <button class="filter-tab active" data-filter="pending">
+            Pendentes
+            <span class="pending-badge" id="pending-badge" aria-label="caixas pendentes"></span>
+          </button>
+          <button class="filter-tab" data-filter="approved">Aprovadas</button>
+          <button class="filter-tab" data-filter="rejected">Rejeitadas</button>
+          <button class="filter-tab" data-filter="all">Todas</button>
+        </nav>
+      </div>
+
+      <div class="table-wrap">
+        <table aria-label="Lista de caixas">
+          <thead>
+            <tr>
+              <th scope="col">Caixa</th>
+              <th scope="col">Espécie</th>
+              <th scope="col">Status</th>
+              <th scope="col">Criador</th>
+              <th scope="col" style="text-align:right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="hives-tbody"></tbody>
+        </table>
+
+        <div id="table-empty" role="status">
+          <div class="empty-icon" aria-hidden="true">🍯</div>
+          <p class="empty-text">Nenhuma caixa nesta categoria.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── DETAIL MODAL ────────────────────────────── -->
+<div
+  class="modal-overlay"
+  id="detail-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="detail-modal-title"
+  aria-hidden="true"
+>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="detail-modal-title">Detalhes da caixa</h2>
+      <button class="modal-close" id="detail-close" aria-label="Fechar detalhes">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="detail-grid">
+        <div class="detail-field" style="grid-column: 1 / -1;">
+          <div class="detail-label">Apelido</div>
+          <div class="detail-value" id="detail-nickname"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Espécie</div>
+          <div class="detail-value" id="detail-species"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Status</div>
+          <div class="detail-value" id="detail-status"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Criador</div>
+          <div class="detail-value" id="detail-owner"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">E-mail (privado)</div>
+          <div class="detail-value email-field" id="detail-email"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Cidade</div>
+          <div class="detail-value" id="detail-city"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Coordenadas</div>
+          <div class="detail-value" id="detail-coords" style="font-family:var(--font-mono);font-size:12px;"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Instalada em</div>
+          <div class="detail-value" id="detail-installed"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Localização aprox.</div>
+          <div class="detail-value" id="detail-approx"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Cadastrada em</div>
+          <div class="detail-value" id="detail-created" style="font-family:var(--font-mono);font-size:11px;"></div>
+        </div>
+        <div class="detail-field" style="grid-column: 1 / -1;">
+          <div class="detail-label">Slug público</div>
+          <div class="detail-value" id="detail-slug" style="font-family:var(--font-mono);font-size:11px;"></div>
+        </div>
+      </div>
+
+      <div class="detail-section-title">Observação</div>
+      <div class="detail-note" id="detail-note"></div>
+
+      <div class="detail-section-title">Foto</div>
+      <div id="detail-photo"></div>
+
+      <div class="rejection-box" id="detail-rejection" style="display:none;">
+        <div class="rejection-label">Motivo da rejeição</div>
+        <div class="rejection-text" id="detail-rejected-reason"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── REJECT MODAL ────────────────────────────── -->
+<div
+  class="modal-overlay"
+  id="reject-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="reject-modal-title"
+  aria-hidden="true"
+>
+  <div class="modal-box reject-modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="reject-modal-title">Rejeitar caixa</h2>
+      <button class="modal-close" id="reject-close-x" aria-label="Cancelar rejeição">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="reject-desc">Informe o motivo da rejeição (opcional). O motivo fica registrado internamente.</p>
+      <label for="reject-reason" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Motivo da rejeição</label>
+      <textarea
+        class="reject-textarea"
+        id="reject-reason"
+        placeholder="ex: Localização fora da área coberta, dados incompletos..."
+        maxlength="400"
+      ></textarea>
+      <div class="reject-actions">
+        <button class="btn-reject-cancel" id="reject-cancel">Cancelar</button>
+        <button class="btn-reject-confirm" id="reject-confirm">Confirmar rejeição</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────── -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ── SCRIPTS ────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/admin.js"></script>
+
+<script>
+  // Wire the reject-close-x button (not in admin.js scope)
+  document.getElementById('reject-close-x').addEventListener('click', () => {
+    document.getElementById('reject-modal').style.display = 'none';
+    document.getElementById('reject-modal').setAttribute('aria-hidden', 'true');
+  });
+</script>
+
+</body>
+</html>

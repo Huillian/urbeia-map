@@ -27,13 +27,11 @@ window.urbeiaDB = {
   },
 
   async submitHive(hiveData) {
-    const { data, error } = await _client
+    // Sem .select() — row pending não passa pela policy SELECT anon (só approved passa)
+    const { error } = await _client
       .from('hives')
-      .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false })
-      .select('id, public_slug')
-      .single();
+      .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false });
     if (error) throw new Error(`submitHive: ${error.message}`);
-    return data;
   },
 
   async uploadPhoto(file) {

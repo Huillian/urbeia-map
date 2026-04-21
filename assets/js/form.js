@@ -1,0 +1,230 @@
+// Design intent: guided registration flow, map-first pin placement, honest feedback
+
+const CACADOR        = [-26.7749, -51.0156];
+const ALLOWED_TYPES  = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
+let _map    = null;
+let _marker = null;
+let _coords = null; // { lat, lng } set when user places pin
+
+// ── Slug generation ───────────────────────────────────────────────
+function generateSlug(ownerName, city) {
+  const base = `${ownerName || 'comunidade'}-${city || 'sc'}`
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    .slice(0, 28);
+  return `${base}-${Date.now().toString(36)}`;
+}
+
+// ── Map init ──────────────────────────────────────────────────────
+function initMap() {
+  _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: true });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+  }).addTo(_map);
+
+  // Click on map to place pin
+  _map.on('click', e => placePinAt(e.latlng.lat, e.latlng.lng));
+}
+
+function placePinAt(lat, lng) {
+  _coords = { lat, lng };
+
+  if (_marker) {
+    _marker.setLatLng([lat, lng]);
+  } else {
+    _marker = L.marker([lat, lng], {
+      draggable: true,
+      icon: L.divIcon({
+        html: `<div class="form-pin"></div>`,
+        className: 'custom-pin-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      }),
+    }).addTo(_map);
+
+    _marker.on('dragend', () => {
+      const pos = _marker.getLatLng();
+      _coords = { lat: pos.lat, lng: pos.lng };
+      updatePinHint(true);
+    });
+  }
+
+  updatePinHint(true);
+  document.getElementById('btn-submit').disabled = false;
+}
+
+function updatePinHint(placed) {
+  const hint = document.getElementById('pin-hint');
+  if (!hint) return;
+  if (placed) {
+    hint.textContent = 'Arraste o pin para ajustar a posição exata.';
+    hint.classList.add('placed');
+  } else {
+    hint.textContent = 'Clique no mapa para marcar onde fica a caixa.';
+    hint.classList.remove('placed');
+  }
+}
+
+// ── Photo validation ──────────────────────────────────────────────
+function validatePhoto(file) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Formato inválido. Use JPG, PNG ou WebP.');
+  }
+  if (file.size > MAX_SIZE_BYTES) {
+    throw new Error('Arquivo muito grande. Máximo 5MB.');
+  }
+}
+
+// ── Photo preview ─────────────────────────────────────────────────
+function setupPhotoPreview() {
+  const input   = document.getElementById('field-photo');
+  const preview = document.getElementById('photo-preview');
+  const error   = document.getElementById('photo-error');
+
+  if (!input) return;
+
+  input.addEventListener('change', () => {
+    error.textContent = '';
+    preview.innerHTML = '';
+    const file = input.files[0];
+    if (!file) return;
+
+    try {
+      validatePhoto(file);
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = 'Preview da foto';
+      preview.appendChild(img);
+    } catch (err) {
+      error.textContent = err.message;
+      input.value = '';
+    }
+  });
+}
+
+// ── UI helpers ────────────────────────────────────────────────────
+function setLoading(loading) {
+  const btn  = document.getElementById('btn-submit');
+  const text = document.getElementById('btn-text');
+  const spin = document.getElementById('btn-spinner');
+  btn.disabled  = loading || !_coords;
+  text.textContent = loading ? 'Enviando...' : 'Enviar para aprovação';
+  spin.style.display = loading ? 'inline-block' : 'none';
+}
+
+function showSuccess() {
+  document.getElementById('form-card').style.display = 'none';
+  document.getElementById('success-card').style.display = 'flex';
+}
+
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+}
+
+// ── Form submit ───────────────────────────────────────────────────
+async function handleSubmit(e) {
+  e.preventDefault();
+  clearErrors();
+
+  if (!_coords) {
+    updatePinHint(false);
+    document.getElementById('form-map').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  const speciesSlug = document.getElementById('field-species').value;
+  if (!speciesSlug) {
+    showFieldError('error-species', 'Selecione a espécie.');
+    return;
+  }
+
+  const ownerEmail = document.getElementById('field-email').value.trim();
+  if (ownerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
+    showFieldError('error-email', 'E-mail inválido.');
+    return;
+  }
+
+  const ownerName      = document.getElementById('field-owner').value.trim();
+  const nickname       = document.getElementById('field-nickname').value.trim();
+  const installedAt    = document.getElementById('field-installed').value || null;
+  const note           = document.getElementById('field-note').value.trim();
+  const city           = document.getElementById('field-city').value.trim() || 'Caçador';
+  const approxLocation = document.getElementById('field-approx').checked;
+  const photoFile      = document.getElementById('field-photo').files[0] || null;
+
+  setLoading(true);
+
+  try {
+    let photoUrl = null;
+
+    if (photoFile) {
+      try {
+        validatePhoto(photoFile);
+        photoUrl = await window.urbeiaDB.uploadPhoto(photoFile);
+      } catch (err) {
+        // Upload failure is non-blocking — proceed without photo
+        console.error('Upload de foto falhou:', err);
+      }
+    }
+
+    const hiveData = {
+      public_slug:          generateSlug(ownerName, city),
+      species_slug:         speciesSlug,
+      lat:                  _coords.lat,
+      lng:                  _coords.lng,
+      city:                 city || null,
+      state:                'SC',
+      approximate_location: approxLocation,
+      nickname:             nickname || null,
+      installed_at:         installedAt,
+      owner_name:           ownerName || null,
+      owner_email:          ownerEmail || null,
+      note:                 note || null,
+      photo_url:            photoUrl,
+    };
+
+    await window.urbeiaDB.submitHive(hiveData);
+    showSuccess();
+
+  } catch (err) {
+    console.error('Erro ao cadastrar caixa:', err);
+    showFieldError('error-submit', 'Erro ao enviar. Tente novamente.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+async function init() {
+  initMap();
+  setupPhotoPreview();
+
+  // Populate species select
+  try {
+    const species = await window.urbeiaDB.getSpecies();
+    const select  = document.getElementById('field-species');
+    species.forEach(s => {
+      const opt    = document.createElement('option');
+      opt.value    = s.slug;
+      opt.textContent = `${s.name_pt} — ${s.name_scientific}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Erro ao carregar espécies:', err);
+  }
+
+  document.getElementById('cadastro-form').addEventListener('submit', handleSubmit);
+}
+
+document.addEventListener('DOMContentLoaded', init);

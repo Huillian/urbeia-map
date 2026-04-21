@@ -35,4 +35,15 @@ window.urbeiaDB = {
     if (error) throw new Error(`submitHive: ${error.message}`);
     return data;
   },
+
+  async uploadPhoto(file) {
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await _client.storage
+      .from('hive-photos')
+      .upload(path, file, { contentType: file.type, upsert: false });
+    if (error) throw new Error(`uploadPhoto: ${error.message}`);
+    const { data: urlData } = _client.storage.from('hive-photos').getPublicUrl(data.path);
+    return urlData.publicUrl;
+  },
 };

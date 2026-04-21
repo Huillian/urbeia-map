@@ -18,9 +18,20 @@ Thumbs.db
 *.swp
 *.swo
 
-# Arquivos de planejamento / duplicatas
+# Arquivos internos / planejamento — não vão pro GitHub
 claude-code-environment-architect.md
 urbeia-map-docs/
+.claude/
+CLAUDE.md
+docs/
+EXECUTION.md
+INDEX.md
+LAUNCH.md
+ROADMAP.md
+SCHEMA.md
+SPEC.md
+SPECIES.md
+urbeia-map-mockup.html
 
 # Logs
 *.log

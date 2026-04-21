@@ -362,32 +362,31 @@ function initLogin() {
 
 // ── Init ───────────────────────────────────────────────────────────
 async function init() {
-  // Check URL params for auth callback
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  if (hashParams.get('access_token')) {
-    // Supabase processes the token automatically; clean URL
-    history.replaceState(null, '', window.location.pathname);
-  }
+  let _booted = false;
 
+  // Register listener BEFORE getSession — catches magic link redirect token
+  _db.auth.onAuthStateChange(async (event, newSession) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newSession && !_booted) {
+      _booted = true;
+      _session = newSession;
+      // Clean URL hash after SDK has already read the token
+      if (window.location.hash.includes('access_token')) {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      showAdminPanel();
+      await bootPanel();
+    } else if (event === 'SIGNED_OUT') {
+      _booted = false;
+      showLoginScreen();
+    }
+  });
+
+  // Handle case where no session exists (fresh load, not a magic link redirect)
   const session = await checkSession();
-
-  if (!session) {
+  if (!session && !_booted) {
     showLoginScreen();
     initLogin();
-
-    // Listen for auth state change (magic link click)
-    _db.auth.onAuthStateChange(async (event, newSession) => {
-      if (event === 'SIGNED_IN' && newSession) {
-        _session = newSession;
-        showAdminPanel();
-        await bootPanel();
-      }
-    });
-    return;
   }
-
-  showAdminPanel();
-  await bootPanel();
 }
 
 async function bootPanel() {

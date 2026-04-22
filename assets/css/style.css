@@ -42,14 +42,14 @@
 
 /* Light theme: "Favos & Floresta" — parchment âmbar, castanho quente, verde sage */
 [data-theme="light"] {
-  --bg:           #faf5e9;
+  --bg:           #ffffff;
   --bg-card:      rgba(255, 250, 235, 0.92);
   --bg-elevated:  rgba(255, 252, 242, 0.97);
   --bg-glass:     rgba(250, 245, 233, 0.94);
   --bg-overlay:   rgba(250, 245, 233, 0.82);
   --border:       rgba(120, 85, 30, 0.10);
   --border-strong: rgba(120, 85, 30, 0.20);
-  --pin-border:   #faf5e9;
+  --pin-border:   #ffffff;
   --item-hover:   rgba(120, 85, 30, 0.06);
   --item-bg:      rgba(120, 85, 30, 0.03);
 

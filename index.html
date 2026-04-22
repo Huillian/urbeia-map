@@ -135,16 +135,23 @@
     if (!nav) return;
 
     if (session) {
-      const name = session.user.user_metadata?.full_name ||
-                   session.user.user_metadata?.name ||
-                   session.user.email?.split('@')[0] || '';
-      const safeName = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const rawName  = session.user.user_metadata?.full_name ||
+                       session.user.user_metadata?.name ||
+                       session.user.email?.split('@')[0] || '';
+      const first    = rawName.split(' ')[0];
+      const display  = first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+      const initial  = display.charAt(0);
+      const safeDisplay = display.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const isAdmin  = session.user.email === ADMIN_EMAIL;
       nav.innerHTML = `
-        ${isAdmin ? '<a href="admin.html" class="nav-link" style="color:var(--orange)">Admin ↗</a>' : ''}
+        ${isAdmin ? '<a href="admin.html" class="nav-link" style="color:var(--orange);font-weight:500;">Admin ↗</a>' : ''}
         <a href="minhas-caixas.html" class="nav-link">Minhas caixas</a>
         <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
-        <button class="nav-link" id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--text-dim);">Sair (${safeName})</button>
+        <span class="nav-user">
+          <span class="nav-avatar" aria-hidden="true">${initial}</span>
+          ${safeDisplay}
+        </span>
+        <button class="nav-link" id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--text-dim);">Sair</button>
       `;
       document.getElementById('btn-signout').addEventListener('click', async () => {
         await window.urbeiaDB.signOut();

@@ -143,19 +143,36 @@ function initGeolocation() {
 }
 
 // ── Map init ──────────────────────────────────────────────────────
-function initMap() {
-  _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: false });
-  L.control.zoom({ position: 'bottomright' }).addTo(_map);
+let _tileLayer = null;
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+function getTileUrl(theme) {
+  return theme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+}
+
+function swapTileLayer(theme) {
+  if (_tileLayer) _map.removeLayer(_tileLayer);
+  _tileLayer = L.tileLayer(getTileUrl(theme), {
     maxZoom: 19,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
   }).addTo(_map);
+}
+
+function initMap() {
+  _map = L.map('form-map', { center: CACADOR, zoom: 14, zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(_map);
+
+  swapTileLayer(window.urbeiaTheme?.current() || 'dark');
 
   // Click on map to place pin
   _map.on('click', e => placePinAt(e.latlng.lat, e.latlng.lng));
 }
+
+document.addEventListener('urbeia:themechange', e => {
+  if (_map) swapTileLayer(e.detail.theme);
+});
 
 function placePinAt(lat, lng) {
   _coords = { lat, lng };

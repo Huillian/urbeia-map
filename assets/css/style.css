@@ -40,18 +40,18 @@
   --radius-full:  9999px;
 }
 
-/* Light theme: "Favos & Floresta" — parchment âmbar, castanho quente, verde sage */
+/* Light theme */
 [data-theme="light"] {
   --bg:           #ffffff;
-  --bg-card:      rgba(255, 250, 235, 0.92);
-  --bg-elevated:  rgba(255, 252, 242, 0.97);
-  --bg-glass:     rgba(250, 245, 233, 0.94);
-  --bg-overlay:   rgba(250, 245, 233, 0.82);
-  --border:       rgba(120, 85, 30, 0.10);
-  --border-strong: rgba(120, 85, 30, 0.20);
+  --bg-card:      rgba(255, 255, 255, 0.92);
+  --bg-elevated:  rgba(255, 255, 255, 0.97);
+  --bg-glass:     rgba(255, 255, 255, 0.94);
+  --bg-overlay:   rgba(255, 255, 255, 0.82);
+  --border:       rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
   --pin-border:   #ffffff;
-  --item-hover:   rgba(120, 85, 30, 0.06);
-  --item-bg:      rgba(120, 85, 30, 0.03);
+  --item-hover:   rgba(0, 0, 0, 0.05);
+  --item-bg:      rgba(0, 0, 0, 0.02);
 
   --text:         #2f2011;
   --text-dim:     #6b4f2e;

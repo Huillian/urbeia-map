@@ -292,6 +292,12 @@ function setLoading(loading) {
 function showSuccess() {
   document.getElementById('form-card').style.display = 'none';
   document.getElementById('success-card').style.display = 'flex';
+  if (_isAdmin) {
+    const title = document.getElementById('success-title');
+    const text  = document.getElementById('success-text');
+    if (title) title.innerHTML = 'Caixa <em>publicada!</em>';
+    if (text)  text.textContent = 'A caixa foi aprovada e já aparece no mapa.';
+  }
 }
 
 function showFieldError(id, msg) {

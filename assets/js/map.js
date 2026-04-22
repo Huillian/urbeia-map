@@ -9,6 +9,7 @@ const _state = {
   activeSpecies: new Set(),
   map: null,
   hivesLayer: null,
+  tileLayer: null,
 };
 
 // Offset coords for privacy when approximate_location=true (~200m random shift)
@@ -208,15 +209,26 @@ function showErrorToast(msg) {
   if (el) { el.textContent = msg; el.style.display = 'flex'; }
 }
 
-async function initMap() {
-  _state.map = L.map('map', { center: CACADOR, zoom: 14, zoomControl: false });
-  L.control.zoom({ position: 'bottomright' }).addTo(_state.map);
+function getTileUrl(theme) {
+  return theme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+}
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+function swapTileLayer(theme) {
+  if (_state.tileLayer) _state.map.removeLayer(_state.tileLayer);
+  _state.tileLayer = L.tileLayer(getTileUrl(theme), {
     maxZoom:     19,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
     subdomains:  'abcd',
   }).addTo(_state.map);
+}
+
+async function initMap() {
+  _state.map = L.map('map', { center: CACADOR, zoom: 14, zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(_state.map);
+
+  swapTileLayer(window.urbeiaTheme?.current() || 'dark');
 
   _state.hivesLayer = L.layerGroup().addTo(_state.map);
 
@@ -248,6 +260,11 @@ async function initMap() {
     showLoadingState(false);
   }
 }
+
+// Wire up theme changes to swap map tiles
+document.addEventListener('urbeia:themechange', e => {
+  if (_state.map) swapTileLayer(e.detail.theme);
+});
 
 // Wire up type filters
 document.addEventListener('DOMContentLoaded', () => {

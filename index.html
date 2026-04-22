@@ -22,6 +22,8 @@
 
   <!-- App styles -->
   <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Theme — carregado cedo para evitar FOUC -->
+  <script src="assets/js/theme.js"></script>
 </head>
 <body>
 
@@ -34,9 +36,12 @@
       <span class="brand-sub">v0 · Caçador/SC</span>
     </div>
   </div>
-  <nav class="topbar-right" aria-label="Navegação principal" id="topbar-right">
-    <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
-  </nav>
+  <div class="topbar-actions">
+    <button class="btn-theme" id="btn-theme"></button>
+    <nav class="topbar-right" aria-label="Navegação principal" id="topbar-right">
+      <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
+    </nav>
+  </div>
 </header>
 
 <!-- ── SIDEBAR ────────────────────────────────── -->

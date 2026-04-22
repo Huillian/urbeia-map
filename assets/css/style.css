@@ -4,8 +4,13 @@
   --bg:           #0a0a0e;
   --bg-card:      rgba(20, 20, 26, 0.85);
   --bg-elevated:  rgba(28, 28, 36, 0.97);
+  --bg-glass:     rgba(10, 10, 14, 0.88);
+  --bg-overlay:   rgba(10, 10, 14, 0.70);
   --border:       rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
+  --pin-border:   #0a0a0e;
+  --item-hover:   rgba(255, 255, 255, 0.04);
+  --item-bg:      rgba(255, 255, 255, 0.02);
 
   --text:         #e5e5e5;
   --text-dim:     #9ca3af;
@@ -35,6 +40,27 @@
   --radius-full:  9999px;
 }
 
+[data-theme="light"] {
+  --bg:           #f5f3ee;
+  --bg-card:      rgba(255, 252, 247, 0.90);
+  --bg-elevated:  rgba(255, 254, 251, 0.97);
+  --bg-glass:     rgba(245, 243, 238, 0.92);
+  --bg-overlay:   rgba(245, 243, 238, 0.80);
+  --border:       rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --pin-border:   #f5f3ee;
+  --item-hover:   rgba(0, 0, 0, 0.04);
+  --item-bg:      rgba(0, 0, 0, 0.02);
+
+  --text:         #0f0f0f;
+  --text-dim:     #4b5563;
+  --text-muted:   #9ca3af;
+
+  --green:        #059669;
+  --green-soft:   rgba(5, 150, 105, 0.12);
+  --success:      #059669;
+}
+
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
@@ -56,7 +82,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: rgba(10, 10, 14, 0.88);
+  background: var(--bg-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
@@ -219,7 +245,7 @@ html, body {
 
 .stat-card {
   padding: 12px 8px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   text-align: center;
@@ -227,7 +253,7 @@ html, body {
 }
 
 .stat-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--item-hover);
   border-color: var(--border-strong);
 }
 
@@ -260,7 +286,7 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   cursor: pointer;
@@ -269,7 +295,7 @@ html, body {
 }
 
 .filter-toggle:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--item-hover);
   border-color: var(--border-strong);
 }
 
@@ -302,7 +328,7 @@ html, body {
   align-items: center;
   gap: 8px;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -310,12 +336,12 @@ html, body {
   font-size: 12px;
 }
 
-.species-chip:hover { background: rgba(255, 255, 255, 0.04); }
+.species-chip:hover { background: var(--item-hover); }
 
 .species-chip input { display: none; }
 
 .species-chip.active {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--item-bg);
   border-color: var(--border-strong);
 }
 
@@ -349,7 +375,7 @@ html, body {
 .map-loading {
   position: absolute;
   top: 60px; left: 0; right: 0; bottom: 0;
-  background: rgba(10, 10, 14, 0.7);
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -387,7 +413,7 @@ html, body {
 
 /* Leaflet overrides */
 .leaflet-control-attribution {
-  background: rgba(10, 10, 14, 0.8) !important;
+  background: var(--bg-glass) !important;
   color: var(--text-muted) !important;
   font-family: var(--font-mono) !important;
   font-size: 10px !important;
@@ -493,7 +519,7 @@ html, body {
   gap: 6px;
   margin-top: 12px;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border: 1px solid var(--border);
   border-radius: 6px;
   font-family: var(--font-mono);
@@ -513,7 +539,7 @@ html, body {
 .hive-popup .note {
   margin-top: 12px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border-left: 2px solid var(--orange);
   border-radius: 0 6px 6px 0;
   font-size: 12px;
@@ -528,7 +554,7 @@ html, body {
 .custom-pin {
   width: 18px; height: 18px;
   border-radius: 50%;
-  border: 2.5px solid #0a0a0e;
+  border: 2.5px solid var(--pin-border);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 4px 10px rgba(0, 0, 0, 0.5);
   transition: transform 0.15s ease;
   cursor: pointer;
@@ -592,6 +618,35 @@ html, body {
   animation: pulse 2s infinite;
   flex-shrink: 0;
 }
+
+/* ── THEME TOGGLE ────────────────────────────────── */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-theme {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1;
+  font-family: inherit;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-theme:hover {
+  color: var(--text);
+  background: var(--item-hover);
+}
+
+[data-theme="dark"] .btn-theme::after  { content: "☀"; }
+[data-theme="light"] .btn-theme::after { content: "◑"; }
 
 /* ── RESPONSIVE ──────────────────────────────────── */
 @media (max-width: 768px) {

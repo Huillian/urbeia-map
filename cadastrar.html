@@ -158,7 +158,7 @@
     }
 
     select.field-input option {
-      background: #1c1c24;
+      background: var(--bg-elevated);
       color: var(--text);
     }
 
@@ -436,7 +436,7 @@
     .search-input {
       width: 100%;
       padding: 10px 12px 10px 36px;
-      background: rgba(10, 10, 14, 0.92);
+      background: var(--bg-glass);
       backdrop-filter: blur(16px);
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-sm);
@@ -466,7 +466,7 @@
       top: calc(100% + 6px);
       left: 0;
       right: 0;
-      background: rgba(20, 20, 26, 0.98);
+      background: var(--bg-elevated);
       backdrop-filter: blur(20px);
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-sm);
@@ -489,7 +489,7 @@
     }
 
     .search-result-item:last-child { border-bottom: none; }
-    .search-result-item:hover { background: rgba(255,255,255,0.05); }
+    .search-result-item:hover { background: var(--item-hover); }
 
     .result-name {
       display: block;

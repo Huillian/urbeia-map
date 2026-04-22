@@ -430,17 +430,28 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
   font-size: 12px;
+  opacity: 0.35;
 }
 
-.species-chip:hover { background: var(--item-hover); }
+.species-chip:hover { background: var(--item-hover); opacity: 0.55; }
 
 .species-chip input { display: none; }
 
 .species-chip.active {
-  background: var(--item-bg);
+  opacity: 1;
   border-color: var(--border-strong);
+}
+
+.species-chip.active:hover { background: var(--item-hover); }
+
+.species-chip .hive-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: auto;
+  padding-left: 4px;
 }
 
 .species-chip .color-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }

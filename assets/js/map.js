@@ -160,7 +160,7 @@ function renderTypeFilterCounts() {
   set('count-community', community);
 }
 
-function renderSpeciesFilters() {
+function renderSpeciesFilters(hiveCounts = {}) {
   const container = document.getElementById('species-filters');
   if (!container) return;
   container.innerHTML = '';
@@ -183,11 +183,11 @@ function renderSpeciesFilters() {
     name.className = 'name';
     name.textContent = s.name_pt;
 
-    const radius = document.createElement('span');
-    radius.className = 'radius';
-    radius.textContent = `${s.pollination_radius_m}m`;
+    const count = document.createElement('span');
+    count.className = 'hive-count';
+    count.textContent = hiveCounts[s.slug] ? `${hiveCounts[s.slug]}` : '0';
 
-    label.append(cb, dot, name, radius);
+    label.append(cb, dot, name, count);
 
     cb.addEventListener('change', e => {
       if (e.target.checked) { _state.activeSpecies.add(s.slug); label.classList.add('active'); }
@@ -249,8 +249,13 @@ async function initMap() {
 
     species.forEach(s => _state.activeSpecies.add(s.slug));
 
+    const hiveCounts = {};
+    _state.allHives.forEach(h => {
+      hiveCounts[h.species_slug] = (hiveCounts[h.species_slug] || 0) + 1;
+    });
+
     renderTypeFilterCounts();
-    renderSpeciesFilters();
+    renderSpeciesFilters(hiveCounts);
     renderHives();
 
   } catch (err) {

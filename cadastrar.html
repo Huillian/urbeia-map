@@ -646,7 +646,7 @@
     <div class="form-card" id="form-card">
       <div class="form-header">
         <h1 class="form-title">Cadastrar <em>caixa</em></h1>
-        <p class="form-subtitle">Sua caixa fica pendente até ser revisada. Aprovamos em até 48h.</p>
+        <p class="form-subtitle" id="form-subtitle">Sua caixa fica pendente até ser revisada. Aprovamos em até 48h.</p>
       </div>
 
       <form id="cadastro-form" novalidate>
@@ -767,6 +767,17 @@
           </div>
           <div id="photo-preview"></div>
           <div class="field-error" id="photo-error" role="alert"></div>
+        </div>
+
+        <!-- Admin-only: Urbeia Verified -->
+        <div class="field-group" id="admin-verified-group" style="display:none;">
+          <label class="toggle-field" for="field-verified">
+            <input type="checkbox" id="field-verified" checked />
+            <div class="toggle-text">
+              <span class="toggle-label" style="color:var(--orange);">Marcar como Urbeia Verified</span>
+              <span class="toggle-desc">Caixa aparecerá com o selo laranja no mapa.</span>
+            </div>
+          </label>
         </div>
 
         <!-- Localização aproximada -->

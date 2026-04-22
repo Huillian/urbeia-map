@@ -3,10 +3,12 @@
 const CACADOR        = [-26.7749, -51.0156];
 const ALLOWED_TYPES  = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const ADMIN_EMAIL    = 'huilliancomercial@gmail.com';
 
-let _map    = null;
-let _marker = null;
-let _coords = null; // { lat, lng } set when user places pin
+let _map     = null;
+let _marker  = null;
+let _coords  = null; // { lat, lng } set when user places pin
+let _isAdmin = false;
 
 // ── Slug generation ───────────────────────────────────────────────
 function generateSlug(ownerName, city) {
@@ -250,13 +252,40 @@ function setupPhotoPreview() {
   });
 }
 
+// ── Admin mode UI ─────────────────────────────────────────────────
+function applyAdminMode(session) {
+  _isAdmin = true;
+
+  const subtitle = document.getElementById('form-subtitle');
+  if (subtitle) subtitle.textContent = 'Modo admin · caixa aprovada diretamente.';
+
+  const emailGroup = document.getElementById('field-email')?.closest('.field-group');
+  if (emailGroup) emailGroup.style.display = 'none';
+  const emailInput = document.getElementById('field-email');
+  if (emailInput) emailInput.value = session.user.email;
+
+  const nameInput = document.getElementById('field-owner');
+  if (nameInput && !nameInput.value) {
+    const raw = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
+    if (raw) nameInput.value = raw;
+  }
+
+  const verifiedGroup = document.getElementById('admin-verified-group');
+  if (verifiedGroup) verifiedGroup.style.display = 'block';
+
+  const btnText = document.getElementById('btn-text');
+  if (btnText && btnText.textContent !== 'Marque a localização no mapa') {
+    btnText.textContent = 'Cadastrar e aprovar';
+  }
+}
+
 // ── UI helpers ────────────────────────────────────────────────────
 function setLoading(loading) {
   const btn  = document.getElementById('btn-submit');
   const text = document.getElementById('btn-text');
   const spin = document.getElementById('btn-spinner');
   btn.disabled  = loading || !_coords;
-  text.textContent = loading ? 'Enviando...' : 'Enviar para aprovação';
+  text.textContent = loading ? 'Enviando...' : (_isAdmin ? 'Cadastrar e aprovar' : 'Enviar para aprovação');
   spin.style.display = loading ? 'inline-block' : 'none';
 }
 
@@ -340,7 +369,12 @@ async function handleSubmit(e) {
       user_id:              session.user.id,
     };
 
-    await window.urbeiaDB.submitHive(hiveData);
+    if (_isAdmin) {
+      const isVerified = document.getElementById('field-verified')?.checked ?? true;
+      await window.urbeiaDB.submitHiveAdmin(hiveData, isVerified);
+    } else {
+      await window.urbeiaDB.submitHive(hiveData);
+    }
     showSuccess();
 
   } catch (err) {
@@ -359,6 +393,8 @@ async function init() {
     location.replace('login.html?next=cadastrar.html');
     return;
   }
+
+  if (session.user.email === ADMIN_EMAIL) applyAdminMode(session);
 
   initMap();
   initSearch();

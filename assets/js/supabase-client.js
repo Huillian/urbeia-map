@@ -79,6 +79,20 @@ window.urbeiaDB = {
     if (error) throw new Error(`submitHive: ${error.message}`);
   },
 
+  // Admin bypass: insert then immediately approve + optionally verify
+  async submitHiveAdmin(hiveData, isVerified) {
+    const { data, error } = await _client
+      .from('hives')
+      .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false })
+      .select('id')
+      .single();
+    if (error) throw new Error(`submitHiveAdmin insert: ${error.message}`);
+
+    const patch = { status: 'approved', ...(isVerified && { is_urbeia_verified: true }) };
+    const { error: err2 } = await _client.from('hives').update(patch).eq('id', data.id);
+    if (err2) throw new Error(`submitHiveAdmin approve: ${err2.message}`);
+  },
+
   // ── Storage ───────────────────────────────────────────────────────
   async uploadPhoto(file) {
     const ext  = file.name.split('.').pop().toLowerCase();

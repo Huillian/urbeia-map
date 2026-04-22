@@ -143,20 +143,48 @@
       const initial  = display.charAt(0);
       const safeDisplay = display.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const isAdmin  = session.user.email === ADMIN_EMAIL;
+
       nav.innerHTML = `
-        ${isAdmin ? '<a href="admin.html" class="nav-link" style="color:var(--orange);font-weight:500;">Admin ↗</a>' : ''}
-        <a href="minhas-caixas.html" class="nav-link">Minhas caixas</a>
         <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
-        <span class="nav-user">
+        <div class="nav-user" id="nav-user-btn" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
           <span class="nav-avatar" aria-hidden="true">${initial}</span>
           ${safeDisplay}
-        </span>
-        <button class="nav-link" id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--text-dim);">Sair</button>
+          <span class="nav-chevron" aria-hidden="true">▾</span>
+          <div class="nav-dropdown" role="menu">
+            <a href="minhas-caixas.html" class="nav-dropdown-item" role="menuitem">Minhas caixas</a>
+            ${isAdmin ? '<a href="admin.html" class="nav-dropdown-item admin" role="menuitem">Admin ↗</a>' : ''}
+            <div class="nav-dropdown-divider"></div>
+            <button class="nav-dropdown-item" id="btn-signout" role="menuitem">Sair</button>
+          </div>
+        </div>
       `;
-      document.getElementById('btn-signout').addEventListener('click', async () => {
+
+      const userBtn = document.getElementById('nav-user-btn');
+
+      userBtn.addEventListener('click', e => {
+        const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
+        userBtn.setAttribute('aria-expanded', String(!isOpen));
+        e.stopPropagation();
+      });
+
+      userBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          userBtn.click();
+        }
+        if (e.key === 'Escape') userBtn.setAttribute('aria-expanded', 'false');
+      });
+
+      document.addEventListener('click', () => {
+        userBtn.setAttribute('aria-expanded', 'false');
+      });
+
+      document.getElementById('btn-signout').addEventListener('click', async e => {
+        e.stopPropagation();
         await window.urbeiaDB.signOut();
         location.reload();
       });
+
     } else {
       nav.innerHTML = `
         <a href="login.html" class="nav-link">Entrar</a>

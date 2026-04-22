@@ -142,6 +142,7 @@ html, body {
 }
 
 .nav-user {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -151,6 +152,15 @@ html, body {
   font-size: 13px;
   color: var(--text-dim);
   background: var(--item-bg);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.nav-user:hover,
+.nav-user[aria-expanded="true"] {
+  border-color: var(--border-strong);
+  background: var(--item-hover);
 }
 
 .nav-avatar {
@@ -166,6 +176,66 @@ html, body {
   justify-content: center;
   flex-shrink: 0;
   letter-spacing: 0;
+}
+
+.nav-chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 2px;
+  transition: transform 0.15s;
+}
+
+.nav-user[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+
+/* ── USER DROPDOWN ───────────────────────────────── */
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  z-index: 1100;
+  transform-origin: top right;
+  animation: dropdownIn 0.12s ease;
+}
+
+.nav-user[aria-expanded="true"] .nav-dropdown { display: block; }
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-dropdown-item:hover { background: var(--item-hover); color: var(--text); }
+
+.nav-dropdown-item.admin { color: var(--orange); font-weight: 500; }
+
+.nav-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
 }
 
 .nav-link {

@@ -38,9 +38,7 @@
   </div>
   <div class="topbar-actions">
     <button class="btn-theme" id="btn-theme"></button>
-    <nav class="topbar-right" aria-label="Navegação principal" id="topbar-right">
-      <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
-    </nav>
+    <nav class="topbar-right" aria-label="Navegação principal" id="topbar-right"></nav>
   </div>
 </header>
 
@@ -129,17 +127,21 @@
 <script src="assets/js/species.js"></script>
 <script src="assets/js/map.js"></script>
 <script>
-  // Update topbar based on auth state
+  const ADMIN_EMAIL = 'huilliancomercial@gmail.com';
+
   async function updateTopbar() {
     const session = await window.urbeiaDB.getSession();
     const nav = document.getElementById('topbar-right');
     if (!nav) return;
+
     if (session) {
       const name = session.user.user_metadata?.full_name ||
                    session.user.user_metadata?.name ||
                    session.user.email?.split('@')[0] || '';
       const safeName = String(name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const isAdmin  = session.user.email === ADMIN_EMAIL;
       nav.innerHTML = `
+        ${isAdmin ? '<a href="admin.html" class="nav-link" style="color:var(--orange)">Admin ↗</a>' : ''}
         <a href="minhas-caixas.html" class="nav-link">Minhas caixas</a>
         <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
         <button class="nav-link" id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:inherit;color:var(--text-dim);">Sair (${safeName})</button>
@@ -148,6 +150,11 @@
         await window.urbeiaDB.signOut();
         location.reload();
       });
+    } else {
+      nav.innerHTML = `
+        <a href="login.html" class="nav-link">Entrar</a>
+        <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
+      `;
     }
   }
   document.addEventListener('DOMContentLoaded', updateTopbar);

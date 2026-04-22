@@ -1,5 +1,4 @@
-// Admin panel — requires authenticated Supabase session (magic link)
-// All hive mutations use the authenticated client session
+// Admin panel — requires authenticated Supabase session (same login as regular users)
 
 const SUPABASE_URL     = 'https://eerqznktkxxuecbrsbsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcnF6bmt0a3h4dWVjYnJzYnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTc5NzYsImV4cCI6MjA5MjM3Mzk3Nn0.wvsMf8s0M9LeJHPUagI_sqcWzxFtmnpLIt7mggsAeLY';
@@ -29,6 +28,7 @@ async function checkSession() {
 }
 
 async function sendMagicLink(email) {
+  // kept for compatibility — unused, login is via login.html
   const { error } = await _db.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: window.location.href },
@@ -325,49 +325,18 @@ const ADMIN_EMAIL = 'huilliancomercial@gmail.com';
 
 // ── Auth UI ────────────────────────────────────────────────────────
 function showLoginScreen() {
-  document.getElementById('login-screen').style.display  = 'flex';
-  document.getElementById('admin-panel').style.display   = 'none';
-  document.getElementById('access-denied').style.display = 'none';
+  // Redirect to shared login page — admin uses the same account as regular users
+  window.location.href = 'login.html?next=admin.html';
 }
 
 function showAdminPanel() {
-  document.getElementById('login-screen').style.display  = 'none';
   document.getElementById('admin-panel').style.display   = 'block';
   document.getElementById('access-denied').style.display = 'none';
 }
 
 function showAccessDenied() {
-  document.getElementById('login-screen').style.display  = 'none';
   document.getElementById('admin-panel').style.display   = 'none';
   document.getElementById('access-denied').style.display = 'flex';
-}
-
-function initLogin() {
-  const form  = document.getElementById('login-form');
-  const input = document.getElementById('login-email');
-  const msg   = document.getElementById('login-msg');
-  const btn   = document.getElementById('btn-login');
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = input.value.trim();
-    if (!email) return;
-
-    btn.disabled = true;
-    btn.textContent = 'Enviando...';
-    msg.textContent = '';
-
-    try {
-      await sendMagicLink(email);
-      msg.textContent = 'Link enviado! Verifique seu e-mail.';
-      msg.className = 'login-msg success';
-    } catch (err) {
-      msg.textContent = `Erro: ${err.message}`;
-      msg.className = 'login-msg error';
-      btn.disabled = false;
-      btn.textContent = 'Enviar magic link';
-    }
-  });
 }
 
 // ── Init ───────────────────────────────────────────────────────────
@@ -397,7 +366,6 @@ async function init() {
   const session = await checkSession();
   if (!session && !_booted) {
     showLoginScreen();
-    initLogin();
   }
 }
 

@@ -40,25 +40,26 @@
   --radius-full:  9999px;
 }
 
+/* Light theme: "Favos & Floresta" — parchment âmbar, castanho quente, verde sage */
 [data-theme="light"] {
-  --bg:           #f5f3ee;
-  --bg-card:      rgba(255, 252, 247, 0.90);
-  --bg-elevated:  rgba(255, 254, 251, 0.97);
-  --bg-glass:     rgba(245, 243, 238, 0.92);
-  --bg-overlay:   rgba(245, 243, 238, 0.80);
-  --border:       rgba(0, 0, 0, 0.07);
-  --border-strong: rgba(0, 0, 0, 0.13);
-  --pin-border:   #f5f3ee;
-  --item-hover:   rgba(0, 0, 0, 0.04);
-  --item-bg:      rgba(0, 0, 0, 0.02);
+  --bg:           #faf5e9;
+  --bg-card:      rgba(255, 250, 235, 0.92);
+  --bg-elevated:  rgba(255, 252, 242, 0.97);
+  --bg-glass:     rgba(250, 245, 233, 0.94);
+  --bg-overlay:   rgba(250, 245, 233, 0.82);
+  --border:       rgba(120, 85, 30, 0.10);
+  --border-strong: rgba(120, 85, 30, 0.20);
+  --pin-border:   #faf5e9;
+  --item-hover:   rgba(120, 85, 30, 0.06);
+  --item-bg:      rgba(120, 85, 30, 0.03);
 
-  --text:         #0f0f0f;
-  --text-dim:     #4b5563;
-  --text-muted:   #9ca3af;
+  --text:         #2f2011;
+  --text-dim:     #6b4f2e;
+  --text-muted:   #a08968;
 
-  --green:        #059669;
-  --green-soft:   rgba(5, 150, 105, 0.12);
-  --success:      #059669;
+  --green:        #5c7650;
+  --green-soft:   rgba(92, 118, 80, 0.13);
+  --success:      #5c7650;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }

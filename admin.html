@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
   <title>Admin · Urbeia Map</title>
   <meta name="robots" content="noindex, nofollow" />
 
@@ -139,12 +140,7 @@
     .admin-brand-logo {
       width: 30px;
       height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--orange);
-      border-radius: 8px;
-      font-size: 15px;
+      object-fit: contain;
     }
 
     .admin-brand-text {
@@ -741,7 +737,7 @@
   <!-- Topbar -->
   <header class="admin-topbar">
     <div class="admin-brand">
-      <div class="admin-brand-logo" aria-hidden="true">🐝</div>
+      <img class="admin-brand-logo" src="assets/img/urbeia-icon.png" alt="Urbeia" />
       <span class="admin-brand-text">Urbeia Map</span>
       <span class="admin-brand-badge">ADMIN</span>
     </div>

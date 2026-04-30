@@ -98,6 +98,33 @@ function buildPopup(hive, species) {
   `;
 }
 
+function isMobileMap() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function showMobileHiveSheet(hive, species) {
+  const sheet = document.getElementById('mobile-hive-sheet');
+  const content = document.getElementById('mobile-hive-content');
+  const filterSheet = document.querySelector('.sidebar');
+  if (!sheet || !content) return;
+
+  content.innerHTML = buildPopup(hive, species);
+  sheet.classList.add('is-open');
+  sheet.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('mobile-detail-open');
+  document.body.classList.remove('mobile-filter-open');
+  filterSheet?.classList.remove('is-expanded');
+  document.getElementById('sheet-toggle')?.setAttribute('aria-expanded', 'false');
+}
+
+function hideMobileHiveSheet() {
+  const sheet = document.getElementById('mobile-hive-sheet');
+  if (!sheet) return;
+  sheet.classList.remove('is-open');
+  sheet.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('mobile-detail-open');
+}
+
 function getVisible() {
   return _state.allHives.filter(h => {
     const typeOk    = (h.is_urbeia_verified && _state.activeVerified) || (!h.is_urbeia_verified && _state.activeCommunity);
@@ -136,6 +163,13 @@ function renderHives() {
     }).addTo(_state.hivesLayer);
 
     marker.bindPopup(buildPopup(hive, species), { closeButton: true, autoClose: true, maxWidth: 280 });
+    marker.on('click', e => {
+      if (isMobileMap()) {
+        if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+        _state.map.closePopup();
+        showMobileHiveSheet(hive, species);
+      }
+    });
   });
 
   updateStats(visible);
@@ -238,6 +272,7 @@ function swapTileLayer(theme) {
 async function initMap() {
   _state.map = L.map('map', { center: CACADOR, zoom: 14, zoomControl: false });
   L.control.zoom({ position: 'bottomright' }).addTo(_state.map);
+  initMobileSheets();
 
   swapTileLayer(window.urbeiaTheme?.current() || 'dark');
 
@@ -275,6 +310,30 @@ async function initMap() {
   } finally {
     showLoadingState(false);
   }
+}
+
+function initMobileSheets() {
+  const filterSheet = document.querySelector('.sidebar');
+  const toggle = document.getElementById('sheet-toggle');
+  const mobileHiveClose = document.getElementById('mobile-hive-close');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = filterSheet?.classList.toggle('is-expanded');
+    toggle.setAttribute('aria-expanded', String(Boolean(expanded)));
+    document.body.classList.toggle('mobile-filter-open', Boolean(expanded));
+    hideMobileHiveSheet();
+  });
+
+  mobileHiveClose?.addEventListener('click', hideMobileHiveSheet);
+
+  _state.map.on('click dragstart zoomstart', () => {
+    hideMobileHiveSheet();
+    if (filterSheet?.classList.contains('is-expanded')) {
+      filterSheet.classList.remove('is-expanded');
+      toggle?.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('mobile-filter-open');
+    }
+  });
 }
 
 // Wire up theme changes to swap map tiles

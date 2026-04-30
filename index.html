@@ -72,6 +72,13 @@
 
 <!-- ── SIDEBAR ────────────────────────────────── -->
 <aside class="sidebar" aria-label="Painel de filtros e estatísticas">
+  <button class="sheet-toggle" id="sheet-toggle" type="button" aria-expanded="false" aria-controls="map-sheet-content">
+    <span class="sheet-grip" aria-hidden="true"></span>
+    <span class="sheet-toggle-label">Resumo e filtros</span>
+    <span class="sheet-toggle-icon" aria-hidden="true">⌃</span>
+  </button>
+
+  <div id="map-sheet-content" class="map-sheet-content">
 
   <!-- Stats -->
   <section class="sidebar-section">
@@ -157,7 +164,14 @@
     <a href="https://github.com/Huillian/urbeia-map" target="_blank" rel="noopener" aria-label="Ver código no GitHub">GitHub ↗</a>
   </footer>
 
+  </div>
+
 </aside>
+
+<section class="mobile-hive-sheet" id="mobile-hive-sheet" aria-live="polite" aria-hidden="true">
+  <button class="mobile-hive-close" id="mobile-hive-close" type="button" aria-label="Fechar detalhes">×</button>
+  <div id="mobile-hive-content"></div>
+</section>
 
 <!-- ── MAP ───────────────────────────────────── -->
 <main id="map" aria-label="Mapa de caixas de abelhas sem ferrão"></main>

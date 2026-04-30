@@ -11,6 +11,16 @@ CREATE TABLE IF NOT EXISTS species (
   honey_yield_l_year TEXT,
   region_pt TEXT,
   info_url TEXT,
+  family_tribe TEXT DEFAULT 'Apidae / Meliponini',
+  urban_indication TEXT,
+  behavior TEXT,
+  description TEXT,
+  observations TEXT,
+  nesting_type TEXT,
+  key_plants TEXT,
+  conservation_status TEXT,
+  best_use TEXT,
+  occurrence_regions TEXT,
   color_hex TEXT DEFAULT '#06d6a0',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

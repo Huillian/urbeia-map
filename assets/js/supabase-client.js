@@ -18,7 +18,7 @@ window.urbeiaDB = {
   async getSpecies() {
     const { data, error } = await _client
       .from('species')
-      .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt')
+      .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt, family_tribe, urban_indication, behavior, description, observations, nesting_type, key_plants, conservation_status, best_use, occurrence_regions')
       .order('name_pt');
     if (error) throw new Error(`getSpecies: ${error.message}`);
     return data;
@@ -32,6 +32,16 @@ window.urbeiaDB = {
       .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city')
       .eq('status', 'approved');
     if (error) throw new Error(`getApprovedHives: ${error.message}`);
+    return data;
+  },
+
+  async getApprovedHivesBySpecies(speciesSlug) {
+    const { data, error } = await _client
+      .from('hives')
+      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
+      .eq('status', 'approved')
+      .eq('species_slug', speciesSlug);
+    if (error) throw new Error(`getApprovedHivesBySpecies: ${error.message}`);
     return data;
   },
 

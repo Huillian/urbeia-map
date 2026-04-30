@@ -390,6 +390,8 @@ html, body {
   font-size: 13px;
 }
 
+a.filter-toggle { text-decoration: none; }
+
 .filter-toggle:hover {
   background: var(--item-hover);
   border-color: var(--border-strong);

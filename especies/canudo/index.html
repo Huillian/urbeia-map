@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/assets/img/urbeia-icon.png" />
+  <title>Canudo · Urbeia Map</title>
+  <link rel="canonical" href="https://map.urbeia.com.br/especies/canudo/" />
+  <meta name="description" content="Canudo ou mandaguari no Urbeia Map: raio de polinização, indicação urbana e caixas aprovadas." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <script src="/assets/js/theme.js"></script>
+
+  <style>
+    body { overflow: auto; }
+
+    .species-page { min-height: 100vh; }
+
+    .species-map {
+      width: 100%;
+      height: 360px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .species-content {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 34px 24px 84px;
+    }
+
+    .species-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 26px;
+    }
+
+    .species-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .species-dot-large {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .species-title {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 40px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .species-title em { color: var(--orange); }
+
+    .species-scientific {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+      letter-spacing: 0.04em;
+    }
+
+    .species-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-species {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 8px 13px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-dim);
+      font-size: 12px;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .btn-species.primary {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #0a0a0e;
+      font-weight: 700;
+    }
+
+    .btn-species:hover { border-color: var(--border-strong); color: var(--text); }
+    .btn-species.primary:hover { color: #0a0a0e; box-shadow: 0 6px 18px rgba(255,107,53,0.25); }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px 16px;
+    }
+
+    .info-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .info-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    .info-value.orange { color: var(--orange); }
+
+    .species-copy {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .copy-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .copy-title {
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .copy-text {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    .hive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .hive-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .hive-card img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: var(--item-bg);
+    }
+
+    .hive-card-body { padding: 13px 14px; }
+
+    .hive-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .hive-card-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    .hive-card-link {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--orange);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .empty-state {
+      padding: 28px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .species-map { height: 300px; }
+      .species-title { font-size: 34px; }
+      .info-grid { grid-template-columns: repeat(2, 1fr); }
+      .species-copy { grid-template-columns: 1fr; }
+      .hive-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<main class="species-page">
+  <div class="species-map" id="species-map" aria-label="Mapa filtrado por espécie"></div>
+
+  <section class="species-content" id="species-content" style="display:none;">
+    <div class="species-top">
+      <div>
+        <div class="species-kicker">
+          <span class="species-dot-large" id="species-dot"></span>
+          Espécie no Urbeia Map
+        </div>
+        <h1 class="species-title" id="species-title"></h1>
+        <p class="species-scientific" id="species-scientific"></p>
+      </div>
+      <div class="species-actions">
+        <a class="btn-species" href="/index.html">Ver mapa completo</a>
+        <a class="btn-species primary" href="/cadastrar.html">Cadastrar caixa</a>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Raio de polinização</div>
+        <div class="info-value orange" id="info-radius"></div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Caixas aprovadas</div>
+        <div class="info-value" id="info-hives"></div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Tamanho</div>
+        <div class="info-value" id="info-size"></div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Mel / ano</div>
+        <div class="info-value" id="info-honey"></div>
+      </div>
+    </div>
+
+    <div class="species-copy">
+      <article class="copy-block">
+        <h2 class="copy-title">Indicação urbana</h2>
+        <p class="copy-text" id="species-region"></p>
+      </article>
+      <aside class="copy-block">
+        <h2 class="copy-title">Como ler o raio</h2>
+        <p class="copy-text">O círculo no mapa é uma estimativa de alcance de polinização. O valor ajuda a visualizar impacto urbano, mas não substitui medição científica local.</p>
+      </aside>
+      <article class="copy-block">
+        <h2 class="copy-title">Comportamento e manejo</h2>
+        <p class="copy-text" id="species-behavior"></p>
+      </article>
+      <article class="copy-block">
+        <h2 class="copy-title">Observações ecológicas</h2>
+        <p class="copy-text" id="species-observations"></p>
+      </article>
+      <article class="copy-block">
+        <h2 class="copy-title">Ninho e plantas visitadas</h2>
+        <p class="copy-text" id="species-nesting"></p>
+      </article>
+      <article class="copy-block">
+        <h2 class="copy-title">Conservação e melhor uso</h2>
+        <p class="copy-text" id="species-conservation"></p>
+      </article>
+    </div>
+
+    <h2 class="copy-title">Caixas aprovadas desta espécie</h2>
+    <div class="hive-grid" id="hive-grid"></div>
+  </section>
+
+  <section class="species-content" id="species-notfound" style="display:none;">
+    <div class="empty-state">Espécie não encontrada.</div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/assets/js/supabase-client.js"></script>
+<script src="/assets/js/species-page.js"></script>
+
+</body>
+</html>

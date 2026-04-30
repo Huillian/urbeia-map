@@ -434,6 +434,88 @@ a.filter-toggle { text-decoration: none; }
   color: var(--text-muted);
 }
 
+/* Legend */
+.legend-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-row {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  padding: 10px 11px;
+  background: var(--item-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.legend-symbol {
+  align-self: start;
+  margin-top: 2px;
+}
+
+.legend-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--pin-border);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.08);
+}
+
+.legend-pin.verified {
+  background: var(--orange);
+  box-shadow: 0 0 0 2px rgba(255,107,53,0.24), 0 0 12px rgba(255,107,53,0.38);
+}
+
+.legend-pin.community { background: var(--green); }
+
+.legend-radius {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--orange);
+  background: rgba(255,107,53,0.08);
+}
+
+.legend-approx {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.legend-row strong {
+  display: block;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.25;
+  margin-bottom: 3px;
+}
+
+.legend-row span:not(.legend-symbol) {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.legend-link {
+  display: inline-flex;
+  margin-top: 10px;
+  color: var(--orange);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.legend-link:hover { text-decoration: underline; }
+
 /* Species chips */
 .species-grid { display: flex; flex-direction: column; gap: 4px; }
 

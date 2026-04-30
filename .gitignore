@@ -19,6 +19,7 @@ Thumbs.db
 *.swo
 
 # Arquivos internos / planejamento — não vão pro GitHub
+AGENTS.md
 claude-code-environment-architect.md
 urbeia-map-docs/
 .claude/

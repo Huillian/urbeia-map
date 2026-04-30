@@ -29,7 +29,7 @@ window.urbeiaDB = {
   async getApprovedHives() {
     const { data, error } = await _client
       .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city')
+      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
       .eq('status', 'approved');
     if (error) throw new Error(`getApprovedHives: ${error.message}`);
     return data;

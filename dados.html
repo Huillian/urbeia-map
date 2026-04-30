@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
+  <meta name="robots" content="index, follow" />
+  <title>Dados abertos · Urbeia Map</title>
+  <meta name="description" content="Baixe os dados públicos de caixas aprovadas do Urbeia Map em CSV ou JSON." />
+  <link rel="canonical" href="https://map.urbeia.com.br/dados.html" />
+
+  <meta property="og:site_name" content="Urbeia Map" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://map.urbeia.com.br/dados.html" />
+  <meta property="og:title" content="Dados abertos · Urbeia Map" />
+  <meta property="og:description" content="Exportação pública em CSV e JSON das caixas aprovadas no Urbeia Map." />
+  <meta property="og:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dados abertos · Urbeia Map" />
+  <meta name="twitter:description" content="Baixe os dados públicos de caixas aprovadas do Urbeia Map em CSV ou JSON." />
+  <meta name="twitter:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="assets/js/theme.js"></script>
+  <style>
+    body { overflow: auto; }
+
+    .data-page {
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    .data-hero {
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 78% 14%, rgba(255,107,53,0.13), transparent 30%),
+        var(--bg);
+    }
+
+    .data-inner {
+      width: min(1080px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .data-hero .data-inner {
+      padding: 54px 0 36px;
+    }
+
+    .data-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .data-kicker::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .data-title {
+      max-width: 760px;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 44px;
+      line-height: 1;
+      letter-spacing: 0;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .data-title em { color: var(--orange); }
+
+    .data-lead {
+      max-width: 780px;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text-dim);
+    }
+
+    .data-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .data-actions button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+      box-shadow: none;
+    }
+
+    .data-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 34px 0 84px;
+    }
+
+    .data-section {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .data-section h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .data-section p {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-dim);
+    }
+
+    .data-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .data-stat {
+      padding: 16px;
+      background: var(--item-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .data-stat strong {
+      display: block;
+      font-size: 24px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .data-stat span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .data-table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .data-table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .data-table th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--item-bg);
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .field-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      list-style: none;
+    }
+
+    .field-list li {
+      padding: 12px 13px;
+      background: var(--item-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .field-list code {
+      display: block;
+      color: var(--orange);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .data-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--orange);
+      background: var(--item-bg);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 720px) {
+      .data-inner { width: min(100% - 32px, 1080px); }
+      .data-title { font-size: 36px; }
+      .field-list { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .data-page { padding-top: 56px; }
+      .data-hero .data-inner { padding: 38px 0 28px; }
+      .data-title { font-size: 32px; }
+      .data-lead { font-size: 15px; }
+      .data-stats { grid-template-columns: 1fr; }
+      .data-section { padding: 20px; }
+      .data-actions .btn-cta,
+      .data-actions .nav-link {
+        width: 100%;
+        min-height: 42px;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+      <img class="brand-logo" src="assets/img/urbeia-icon.png" alt="Urbeia" />
+      <span class="brand-text">Urbeia <em>Map</em></span>
+    </a>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-theme" id="btn-theme"></button>
+    <nav class="topbar-right" aria-label="Navegação principal">
+      <a href="index.html" class="nav-link">Mapa</a>
+      <a href="sobre-dados.html" class="nav-link">Sobre os dados</a>
+      <a href="parceiros.html" class="nav-link">Parceiros</a>
+    </nav>
+  </div>
+</header>
+
+<main class="data-page">
+  <section class="data-hero">
+    <div class="data-inner">
+      <div class="data-kicker">Dados públicos</div>
+      <h1 class="data-title">Baixe os registros aprovados do <em>Urbeia Map</em></h1>
+      <p class="data-lead">
+        Esta exportação reúne caixas aprovadas no mapa público em formatos simples para escolas, parceiros e pesquisadores. Coordenadas são omitidas quando a caixa está marcada com localização aproximada.
+      </p>
+      <div class="data-actions">
+        <button class="btn-cta" id="download-csv" disabled>Baixar CSV</button>
+        <button class="nav-link" id="download-json" disabled>Baixar JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="data-inner data-layout">
+    <section class="data-section">
+      <h2>Status da exportação</h2>
+      <p id="data-status">Carregando dados públicos...</p>
+      <div class="data-stats">
+        <div class="data-stat">
+          <strong id="data-count">—</strong>
+          <span>Registros aprovados</span>
+        </div>
+        <div class="data-stat">
+          <strong id="data-updated">—</strong>
+          <span>Gerado em</span>
+        </div>
+      </div>
+      <div class="data-note">
+        A exportação é gerada no navegador a partir das mesmas consultas públicas usadas pelo mapa. Ela não inclui e-mail, dados privados de usuário nem registros pendentes.
+      </div>
+    </section>
+
+    <section class="data-section">
+      <h2>Prévia dos dados</h2>
+      <p>Mostramos até 12 registros para conferência rápida. Os downloads incluem todos os registros aprovados retornados pela consulta pública.</p>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Caixa</th>
+              <th>Espécie</th>
+              <th>Local</th>
+              <th>Tipo</th>
+              <th>Localização</th>
+            </tr>
+          </thead>
+          <tbody id="data-preview-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="data-section">
+      <h2>Dicionário de campos</h2>
+      <p>Campos disponíveis no CSV e no JSON.</p>
+      <ul class="field-list">
+        <li><code>public_slug</code>Identificador público da caixa.</li>
+        <li><code>nickname</code>Apelido público da caixa, quando informado.</li>
+        <li><code>species_slug</code>Identificador da espécie no Urbeia Map.</li>
+        <li><code>species_name</code>Nome popular da espécie.</li>
+        <li><code>species_scientific</code>Nome científico da espécie.</li>
+        <li><code>city/state</code>Município e UF informados no cadastro.</li>
+        <li><code>is_urbeia_verified</code>Indica registro verificado pela Urbeia.</li>
+        <li><code>pollination_radius_m</code>Raio estimado de polinização em metros.</li>
+        <li><code>installed_at</code>Data de instalação, quando disponível.</li>
+        <li><code>approximate_location</code>Indica se a localização pública é aproximada.</li>
+        <li><code>lat/lng</code>Coordenadas omitidas quando a localização é aproximada.</li>
+        <li><code>public_url</code>Link público para a página da caixa.</li>
+      </ul>
+    </section>
+
+    <section class="data-section">
+      <h2>Licença e uso responsável</h2>
+      <p>
+        Os dados públicos são disponibilizados sob CC-BY 4.0, com atribuição ao Urbeia Map. Use os dados preservando o contexto: raios são estimativas, registros comunitários passam por moderação e ausência de caixa no mapa não significa ausência de abelhas na região.
+      </p>
+      <div class="data-actions">
+        <a href="sobre-dados.html" class="nav-link">Ler metodologia</a>
+        <a href="parceiros.html" class="nav-link">Ver parcerias</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/export-data.js"></script>
+
+</body>
+</html>

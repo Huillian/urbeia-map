@@ -253,10 +253,16 @@
       const isAdmin  = session.user.email === ADMIN_EMAIL;
 
       nav.innerHTML = `
-        <a href="sobre-dados.html" class="nav-link">Sobre os dados</a>
-        <a href="parceiros.html" class="nav-link">Parceiros</a>
-        <a href="dados.html" class="nav-link">Dados</a>
-        <a href="impacto.html" class="nav-link">Impacto</a>
+        <div class="nav-menu" id="nav-menu" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+          <span class="nav-menu-label">Mais</span>
+          <span class="nav-chevron" aria-hidden="true">▾</span>
+          <div class="nav-dropdown" role="menu">
+            <a href="impacto.html" class="nav-dropdown-item" role="menuitem">Impacto</a>
+            <a href="dados.html" class="nav-dropdown-item" role="menuitem">Dados abertos</a>
+            <a href="parceiros.html" class="nav-dropdown-item" role="menuitem">Parceiros</a>
+            <a href="sobre-dados.html" class="nav-dropdown-item" role="menuitem">Sobre os dados</a>
+          </div>
+        </div>
         <a href="cadastrar.html" class="btn-cta">＋ Cadastrar caixa</a>
         <div class="nav-user" id="nav-user-btn" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
           <span class="nav-avatar" aria-hidden="true">${initial}</span>
@@ -272,10 +278,19 @@
       `;
 
       const userBtn = document.getElementById('nav-user-btn');
+      const menuBtn = document.getElementById('nav-menu');
 
       userBtn.addEventListener('click', e => {
         const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
         userBtn.setAttribute('aria-expanded', String(!isOpen));
+        menuBtn?.setAttribute('aria-expanded', 'false');
+        e.stopPropagation();
+      });
+
+      menuBtn?.addEventListener('click', e => {
+        const isOpen = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', String(!isOpen));
+        userBtn.setAttribute('aria-expanded', 'false');
         e.stopPropagation();
       });
 
@@ -287,8 +302,17 @@
         if (e.key === 'Escape') userBtn.setAttribute('aria-expanded', 'false');
       });
 
+      menuBtn?.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          menuBtn.click();
+        }
+        if (e.key === 'Escape') menuBtn.setAttribute('aria-expanded', 'false');
+      });
+
       document.addEventListener('click', () => {
         userBtn.setAttribute('aria-expanded', 'false');
+        menuBtn?.setAttribute('aria-expanded', 'false');
       });
 
       document.getElementById('btn-signout').addEventListener('click', async e => {
@@ -299,13 +323,35 @@
 
     } else {
       nav.innerHTML = `
-        <a href="sobre-dados.html" class="nav-link">Sobre os dados</a>
-        <a href="parceiros.html" class="nav-link">Parceiros</a>
-        <a href="dados.html" class="nav-link">Dados</a>
-        <a href="impacto.html" class="nav-link">Impacto</a>
+        <div class="nav-menu" id="nav-menu" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+          <span class="nav-menu-label">Mais</span>
+          <span class="nav-chevron" aria-hidden="true">▾</span>
+          <div class="nav-dropdown" role="menu">
+            <a href="impacto.html" class="nav-dropdown-item" role="menuitem">Impacto</a>
+            <a href="dados.html" class="nav-dropdown-item" role="menuitem">Dados abertos</a>
+            <a href="parceiros.html" class="nav-dropdown-item" role="menuitem">Parceiros</a>
+            <a href="sobre-dados.html" class="nav-dropdown-item" role="menuitem">Sobre os dados</a>
+          </div>
+        </div>
         <a href="login.html" class="nav-link">Entrar</a>
         <a href="login.html?next=cadastrar.html" class="btn-cta" aria-label="Cadastrar minha caixa">＋ Cadastrar caixa</a>
       `;
+      const menuBtn = document.getElementById('nav-menu');
+      menuBtn?.addEventListener('click', e => {
+        const isOpen = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', String(!isOpen));
+        e.stopPropagation();
+      });
+      menuBtn?.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          menuBtn.click();
+        }
+        if (e.key === 'Escape') menuBtn.setAttribute('aria-expanded', 'false');
+      });
+      document.addEventListener('click', () => {
+        menuBtn?.setAttribute('aria-expanded', 'false');
+      });
     }
   }
   document.addEventListener('DOMContentLoaded', updateTopbar);

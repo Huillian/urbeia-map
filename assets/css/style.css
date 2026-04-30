@@ -151,7 +151,8 @@ body.page-standard .topbar-right {
 
 body.page-standard .topbar-right::-webkit-scrollbar { display: none; }
 
-.nav-user {
+.nav-user,
+.nav-menu {
   position: relative;
   display: flex;
   align-items: center;
@@ -168,9 +169,20 @@ body.page-standard .topbar-right::-webkit-scrollbar { display: none; }
 }
 
 .nav-user:hover,
-.nav-user[aria-expanded="true"] {
+.nav-user[aria-expanded="true"],
+.nav-menu:hover,
+.nav-menu[aria-expanded="true"] {
   border-color: var(--border-strong);
   background: var(--item-hover);
+}
+
+.nav-menu {
+  padding: 7px 11px;
+}
+
+.nav-menu-label {
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .nav-avatar {
@@ -195,7 +207,8 @@ body.page-standard .topbar-right::-webkit-scrollbar { display: none; }
   transition: transform 0.15s;
 }
 
-.nav-user[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+.nav-user[aria-expanded="true"] .nav-chevron,
+.nav-menu[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
 
 /* ── USER DROPDOWN ───────────────────────────────── */
 .nav-dropdown {
@@ -215,7 +228,8 @@ body.page-standard .topbar-right::-webkit-scrollbar { display: none; }
   animation: dropdownIn 0.12s ease;
 }
 
-.nav-user[aria-expanded="true"] .nav-dropdown { display: block; }
+.nav-user[aria-expanded="true"] .nav-dropdown,
+.nav-menu[aria-expanded="true"] .nav-dropdown { display: block; }
 
 @keyframes dropdownIn {
   from { opacity: 0; transform: scale(0.95) translateY(-4px); }
@@ -904,6 +918,12 @@ a.filter-toggle { text-decoration: none; }
     font-size: 12px;
   }
 
+  .nav-menu {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
   .nav-user > :not(.nav-avatar):not(.nav-chevron):not(.nav-dropdown) {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1165,6 +1185,30 @@ a.filter-toggle { text-decoration: none; }
   .nav-user {
     max-width: 92px;
   }
+
+  .nav-menu-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .nav-menu {
+    min-width: 34px;
+    justify-content: center;
+    padding: 7px 9px;
+  }
+
+  .nav-menu::before {
+    content: "⋯";
+    color: var(--text-dim);
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .nav-menu .nav-chevron { display: none; }
 
   .sidebar {
     max-height: 144px;

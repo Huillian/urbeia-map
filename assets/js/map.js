@@ -295,12 +295,12 @@ function renderHives() {
 
     // Custom pin
     const pinHtml = group.isAggregate
-      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}"><img src="assets/img/hive-box-icon.png" alt=""><span class="site-pin-count">${group.hives.length}</span></div>`
+      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}"><img src="assets/img/icone-meliponario.png" alt="" width="40"><span class="site-pin-count">${group.hives.length}</span></div>`
       : (group.hasVerified
-          ? `<div class="hive-box-pin verified"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt=""></div>`
-          : `<div class="hive-box-pin community"><img src="assets/img/hive-box-icon.png" alt=""></div>`);
-    const iconSize = [42, 54];
-    const iconAnchor = [21, 50];
+          ? `<div class="hive-box-pin verified"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt="" width="28"></div>`
+          : `<div class="hive-box-pin community"><img src="assets/img/hive-box-icon.png" alt="" width="28"></div>`);
+    const iconSize = group.isAggregate ? [42, 34] : [28, 36];
+    const iconAnchor = group.isAggregate ? [21, 31] : [14, 33];
 
     const marker = L.marker([lat, lng], {
       icon: L.divIcon({ html: pinHtml, className: 'custom-pin-icon', iconSize, iconAnchor }),

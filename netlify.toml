@@ -1,0 +1,9 @@
+[[redirects]]
+  from = "/h/:slug/"
+  to = "/.netlify/functions/hive-meta?slug=:slug"
+  status = 200
+
+[[redirects]]
+  from = "/h/:slug"
+  to = "/.netlify/functions/hive-meta?slug=:slug"
+  status = 200

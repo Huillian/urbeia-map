@@ -5,8 +5,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
   <title>Caixa · Urbeia Map</title>
   <meta name="description" content="Caixa de abelhas sem ferrão no mapa Urbeia." />
+  <link rel="canonical" href="https://map.urbeia.com.br/h.html" />
+  <meta property="og:site_name" content="Urbeia Map" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://map.urbeia.com.br/h.html" />
+  <meta property="og:title" content="Caixa · Urbeia Map" />
+  <meta property="og:description" content="Caixa de abelhas sem ferrão no mapa público da Urbeia." />
+  <meta property="og:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Caixa · Urbeia Map" />
+  <meta name="twitter:description" content="Caixa de abelhas sem ferrão no mapa público da Urbeia." />
+  <meta name="twitter:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -375,6 +390,26 @@
       .hive-name { font-size: 26px; }
       .info-grid { grid-template-columns: repeat(2, 1fr); }
       .content { padding: 24px 16px 64px; }
+      .hive-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .species-pill {
+        align-self: flex-start;
+        max-width: 100%;
+      }
+      .meta-row {
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .meta-val {
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+      .cta-btn {
+        width: 100%;
+        min-height: 44px;
+      }
     }
 
     @media (max-width: 400px) {
@@ -501,6 +536,7 @@
 <!-- ── SCRIPTS ────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/seo.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 
 <script>
@@ -540,7 +576,8 @@
 
   async function init() {
     const params = new URLSearchParams(window.location.search);
-    const slug   = params.get('slug');
+    const pathMatch = window.location.pathname.match(/\/h\/([^/]+)\/?$/);
+    const slug = params.get('slug') || (pathMatch ? decodeURIComponent(pathMatch[1]) : null);
 
     if (!slug) { hide('screen-loading'); show('screen-notfound'); return; }
 
@@ -556,17 +593,44 @@
 
     // Update page title + meta
     const title = hive.nickname || (hive.is_urbeia_verified ? 'Caixa Urbeia' : 'Caixa comunitária');
-    document.title = `${title} · Urbeia Map`;
-    document.querySelector('meta[name="description"]').setAttribute(
-      'content',
-      `Caixa de abelhas sem ferrão em ${hive.city || 'SC'} — Urbeia Map`
-    );
+    const hivePath = `/h/${encodeURIComponent(hive.public_slug)}/`;
 
     // Fetch species data
     try {
       const allSpecies = await window.urbeiaDB.getSpecies();
       species = allSpecies.find(s => s.slug === hive.species_slug) || null;
     } catch { /* non-critical */ }
+
+    let hiveImage = 'assets/img/og-cover.png';
+    if (hive.photo_url) {
+      try {
+        hiveImage = await window.urbeiaDB.getPhotoUrl(hive.photo_url);
+      } catch { /* keep default image */ }
+    }
+
+    const speciesName = species?.name_pt ? ` de ${species.name_pt}` : '';
+    const locationText = hive.city ? `${hive.city}, ${hive.state || 'SC'}` : 'Santa Catarina';
+    const description = `Caixa${speciesName} em ${locationText}. Veja a cobertura estimada de polinização no Urbeia Map.`;
+    window.urbeiaSEO?.setPageMeta({
+      title,
+      description,
+      path: hivePath,
+      image: hiveImage,
+      type: 'article',
+    });
+    window.urbeiaSEO?.setJSONLD('hive-jsonld', {
+      '@context': 'https://schema.org',
+      '@type': 'Place',
+      name: title,
+      description,
+      url: window.urbeiaSEO.absoluteUrl(hivePath),
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: hive.city || undefined,
+        addressRegion: hive.state || 'SC',
+        addressCountry: 'BR',
+      },
+    });
 
     // ── Badge ──
     const badge = document.getElementById('hive-badge');
@@ -589,7 +653,7 @@
     // ── Photo ──
     if (hive.photo_url) {
       const img = document.getElementById('hive-photo');
-      img.src = await window.urbeiaDB.getPhotoUrl(hive.photo_url);
+      img.src = hiveImage;
       show('hive-photo');
     }
 

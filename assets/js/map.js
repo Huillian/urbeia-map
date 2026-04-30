@@ -90,7 +90,7 @@ function buildPopup(hive, species) {
 
       ${slug ? `
       <div style="margin-top:12px;">
-        <a href="h.html?slug=${slug}" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,107,53,0.3);padding-bottom:2px;">
+        <a href="${window.urbeiaSEO?.hiveUrl(hive.public_slug) || `h.html?slug=${slug}`}" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,107,53,0.3);padding-bottom:2px;">
           Ver página completa →
         </a>
       </div>` : ''}

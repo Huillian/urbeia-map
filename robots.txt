@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /h.html
+Disallow: /login.html
+Disallow: /minhas-caixas.html
+
+Sitemap: https://map.urbeia.com.br/sitemap.xml

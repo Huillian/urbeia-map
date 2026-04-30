@@ -51,7 +51,7 @@ async function createHiveCard(hive) {
 
   const link = document.createElement('a');
   link.className = 'hive-card-link';
-  link.href = `/h.html?slug=${encodeURIComponent(hive.public_slug)}`;
+  link.href = window.urbeiaSEO?.hiveUrl(hive.public_slug) || `/h.html?slug=${encodeURIComponent(hive.public_slug)}`;
   link.textContent = 'Ver caixa';
 
   body.append(title, meta, link);
@@ -88,11 +88,29 @@ async function initSpeciesPage() {
     }
 
     const hives = await window.urbeiaDB.getApprovedHivesBySpecies(slug);
-    document.title = `${species.name_pt} · Urbeia Map`;
-    document.querySelector('meta[name="description"]')?.setAttribute(
-      'content',
-      `${species.name_pt} (${species.name_scientific}) no mapa de abelhas sem ferrão da Urbeia.`
-    );
+    const speciesPath = `/especies/${slug}/`;
+    const description = `${species.name_pt} (${species.name_scientific}) no Urbeia Map: raio de polinização, indicação urbana e caixas aprovadas.`;
+    window.urbeiaSEO?.setPageMeta({
+      title: species.name_pt,
+      description,
+      path: speciesPath,
+      image: 'assets/img/og-cover.png',
+      type: 'article',
+    });
+    window.urbeiaSEO?.setJSONLD('species-jsonld', {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: `${species.name_pt} no Urbeia Map`,
+      description,
+      url: window.urbeiaSEO.absoluteUrl(speciesPath),
+      image: window.urbeiaSEO.DEFAULT_IMAGE,
+      inLanguage: 'pt-BR',
+      about: {
+        '@type': 'Taxon',
+        name: species.name_pt,
+        alternateName: species.name_scientific,
+      },
+    });
 
     document.getElementById('species-dot').style.background = species.color_hex;
     setText('species-title', species.name_pt);

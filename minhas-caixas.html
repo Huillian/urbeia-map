@@ -4,8 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
   <title>Minhas caixas · Urbeia Map</title>
-  <meta name="robots" content="noindex" />
+  <meta name="description" content="Painel privado para gerenciar suas caixas cadastradas no Urbeia Map." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://map.urbeia.com.br/minhas-caixas.html" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -298,6 +302,61 @@
     @media (max-width: 600px) {
       .main { padding: 20px 16px 64px; }
       .nav-email { display: none; }
+      .user-topbar {
+        height: auto;
+        min-height: 56px;
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .user-brand { min-width: 0; }
+      .user-brand-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .topbar-right-user {
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .btn-nav {
+        min-height: 34px;
+        padding: 7px 10px;
+      }
+      .hive-card {
+        align-items: stretch;
+        padding: 16px;
+      }
+      .hive-card-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .btn-card-action {
+        min-height: 38px;
+        padding: 8px 10px;
+      }
+      .modal-overlay {
+        align-items: flex-end;
+        padding: 12px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+      }
+      .modal-box {
+        max-height: calc(100dvh - 24px);
+        border-radius: 14px;
+      }
+      .modal-header { padding: 16px 18px 0; }
+      .modal-body { padding: 16px 18px 20px; }
+    }
+
+    @media (max-width: 420px) {
+      .user-brand-logo {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+      .user-brand-text { display: none; }
+      .btn-nav-primary { max-width: 104px; }
+      .hive-card-actions { grid-template-columns: 1fr; }
     }
   </style>
   <script src="assets/js/theme.js"></script>
@@ -405,6 +464,7 @@
 
 <!-- ── SCRIPTS ────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/seo.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script>
   const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -470,7 +530,7 @@
           ${h.rejected_reason ? `<div class="rejection-note">Motivo: ${escHtml(h.rejected_reason)}</div>` : ''}
         </div>
         <div class="hive-card-actions">
-          ${h.status === 'approved' ? `<a href="h.html?slug=${encodeURIComponent(h.public_slug)}" class="btn-card-action" target="_blank">Ver</a>` : ''}
+          ${h.status === 'approved' ? `<a href="${window.urbeiaSEO?.hiveUrl(h.public_slug) || `h.html?slug=${encodeURIComponent(h.public_slug)}`}" class="btn-card-action" target="_blank">Ver</a>` : ''}
           <button class="btn-card-action btn-edit"   data-id="${escHtml(h.id)}">Editar</button>
           <button class="btn-card-action btn-delete" data-id="${escHtml(h.id)}">Deletar</button>
         </div>

@@ -124,8 +124,8 @@ Focadas em ASF nativas da região Oeste de SC, onde Caçador está localizada:
 - [x] `minhas-caixas.html` — painel do usuário para editar e deletar caixas
 - [x] Cadastro de caixa exige login (user_id vinculado à caixa)
 - [x] Admin protegido por allowlist de e-mail
-- [ ] SEO completo (meta tags, Open Graph por caixa)
-- [ ] Responsivo mobile completo
+- [x] SEO completo (meta tags, Open Graph por caixa)
+- [x] Responsivo mobile completo
 - [ ] 10 primeiras caixas cadastradas
 
 **Semana 4 — Launch**

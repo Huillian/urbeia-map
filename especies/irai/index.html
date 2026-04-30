@@ -4,9 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="/assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
+  <meta name="robots" content="index, follow" />
   <title>Iraí · Urbeia Map</title>
   <link rel="canonical" href="https://map.urbeia.com.br/especies/irai/" />
   <meta name="description" content="Iraí no Urbeia Map: raio de polinização, indicação urbana e caixas aprovadas." />
+  <meta property="og:site_name" content="Urbeia Map" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://map.urbeia.com.br/especies/irai/" />
+  <meta property="og:title" content="Iraí · Urbeia Map" />
+  <meta property="og:description" content="Iraí no Urbeia Map: raio de polinização, indicação urbana e caixas aprovadas." />
+  <meta property="og:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Iraí · Urbeia Map" />
+  <meta name="twitter:description" content="Iraí no Urbeia Map: raio de polinização, indicação urbana e caixas aprovadas." />
+  <meta name="twitter:image" content="https://map.urbeia.com.br/assets/img/og-cover.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -235,6 +250,25 @@
       .info-grid { grid-template-columns: repeat(2, 1fr); }
       .species-copy { grid-template-columns: 1fr; }
       .hive-grid { grid-template-columns: 1fr; }
+      .species-content { padding: 28px 16px 64px; }
+      .species-top { gap: 16px; }
+      .species-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .btn-species {
+        min-height: 42px;
+        padding: 9px 10px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .species-map { height: 260px; }
+      .species-title { font-size: 30px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .species-actions { grid-template-columns: 1fr; }
+      .copy-block { padding: 18px; }
     }
   </style>
 </head>
@@ -316,6 +350,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/assets/js/seo.js"></script>
 <script src="/assets/js/supabase-client.js"></script>
 <script src="/assets/js/species-page.js"></script>
 

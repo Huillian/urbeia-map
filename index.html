@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
+  <meta name="robots" content="index, follow" />
   <title>Urbeia Map · Abelhas sem ferrão em Caçador/SC</title>
   <meta name="description" content="Plataforma pública que mapeia caixas de abelhas sem ferrão em Santa Catarina. Veja a cobertura de polinização por espécie na sua região." />
 
@@ -40,6 +42,16 @@
   <link rel="stylesheet" href="assets/css/style.css" />
   <!-- Theme — carregado cedo para evitar FOUC -->
   <script src="assets/js/theme.js"></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Urbeia Map",
+      "url": "https://map.urbeia.com.br/",
+      "description": "Mapa público de caixas de abelhas sem ferrão e cobertura estimada de polinização em Santa Catarina.",
+      "inLanguage": "pt-BR"
+    }
+  </script>
 </head>
 <body>
 
@@ -168,6 +180,7 @@
 <!-- ── SCRIPTS ────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/seo.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/species.js"></script>
 <script src="assets/js/map.js"></script>

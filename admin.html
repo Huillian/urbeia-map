@@ -5,8 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="assets/img/urbeia-icon.png" />
+  <meta name="theme-color" content="#0a0a0e" />
   <title>Admin · Urbeia Map</title>
+  <meta name="description" content="Painel administrativo privado do Urbeia Map." />
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://map.urbeia.com.br/admin.html" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -750,11 +753,52 @@
       .admin-email { display: none; }
       .detail-grid { grid-template-columns: 1fr; }
       .quality-grid { grid-template-columns: 1fr; }
+      .admin-topbar {
+        height: auto;
+        min-height: 56px;
+        padding: 10px 16px;
+        gap: 10px;
+      }
+      .admin-brand { min-width: 0; }
+      .admin-brand-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .admin-topbar-right {
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .btn-signout {
+        min-height: 36px;
+        padding: 7px 10px;
+      }
+      .filter-tabs {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: var(--radius-md);
+        scrollbar-width: none;
+      }
+      .filter-tabs::-webkit-scrollbar { display: none; }
+      .filter-tab {
+        flex: 0 0 auto;
+        min-height: 34px;
+      }
+      .table-wrap {
+        margin: 0 -1px;
+        -webkit-overflow-scrolling: touch;
+      }
+      table { min-width: 760px; }
     }
 
     @media (max-width: 480px) {
       .admin-main { padding: 20px 16px 48px; }
       .table-header { flex-direction: column; align-items: flex-start; }
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stat-card { padding: 13px 14px; }
+      .stat-value { font-size: 24px; }
+      .admin-brand-badge { display: none; }
+      .admin-page-title { font-size: 25px; }
     }
   </style>
   <script src="assets/js/theme.js"></script>

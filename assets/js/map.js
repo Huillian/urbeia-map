@@ -98,17 +98,134 @@ function buildPopup(hive, species) {
   `;
 }
 
+function groupKey(hive) {
+  const latKey = Number(hive.lat).toFixed(4);
+  const lngKey = Number(hive.lng).toFixed(4);
+  const ownerKey = (hive.owner_name || '').trim().toLowerCase();
+  const ownerScope = ownerKey || `hive:${hive.public_slug || hive.id}`;
+  const cityKey = (hive.city || '').trim().toLowerCase();
+  return [latKey, lngKey, ownerScope, cityKey].join('|');
+}
+
+function buildSiteGroups(hives) {
+  const byKey = new Map();
+  hives.forEach(hive => {
+    const key = groupKey(hive);
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(hive);
+  });
+
+  return Array.from(byKey.values()).map(items => {
+    const representative = items[0];
+    const speciesCounts = items.reduce((acc, hive) => {
+      const species = window.urbeiaSpecies.get(hive.species_slug);
+      const name = species?.name_pt || hive.species_slug || 'Espécie não informada';
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {});
+    const radii = items
+      .map(hive => window.urbeiaSpecies.get(hive.species_slug)?.pollination_radius_m)
+      .filter(Boolean);
+    const hasVerified = items.some(hive => hive.is_urbeia_verified);
+    const hasCommunity = items.some(hive => !hive.is_urbeia_verified);
+    const maxRadius = radii.length ? Math.max(...radii) : 500;
+    return {
+      hives: items,
+      representative,
+      coords: representative._displayCoords,
+      speciesCounts,
+      maxRadius,
+      hasVerified,
+      hasCommunity,
+      isMixed: hasVerified && hasCommunity,
+      isAggregate: items.length > 1,
+    };
+  });
+}
+
+function siteTitle(group) {
+  if (!group.isAggregate) {
+    const hive = group.representative;
+    return esc(hive.nickname) || (hive.is_urbeia_verified ? 'Caixa Urbeia' : 'Caixa comunitária');
+  }
+  if (group.representative.owner_name) return 'Local com múltiplas caixas';
+  return 'Ponto com múltiplas caixas';
+}
+
+function buildSitePopup(group) {
+  if (!group.isAggregate) {
+    const hive = group.representative;
+    return buildPopup(hive, window.urbeiaSpecies.get(hive.species_slug));
+  }
+
+  const hives = group.hives;
+  const city = esc(group.representative.city);
+  const ownerName = esc(group.representative.owner_name);
+  const speciesTotal = Object.keys(group.speciesCounts).length;
+  const badgeClass = group.isMixed ? 'badge-mixed' : (group.hasVerified ? 'badge-verified' : 'badge-community');
+  const badgeText = group.isMixed ? 'Misto' : (group.hasVerified ? 'Urbeia Verified' : 'Community');
+  const speciesRows = Object.entries(group.speciesCounts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
+    .map(([name, count]) => `
+      <div class="meta-row">
+        <span class="label">${esc(name)}</span>
+        <span class="value">${count} ${count === 1 ? 'caixa' : 'caixas'}</span>
+      </div>
+    `).join('');
+  const firstSlug = hives[0]?.public_slug ? encodeURIComponent(hives[0].public_slug) : null;
+
+  return `
+    <div class="hive-popup site-popup">
+      <span class="badge ${badgeClass}">${badgeText}</span>
+      <h3>${siteTitle(group)}</h3>
+      <div class="species">${hives.length} caixas · ${speciesTotal} ${speciesTotal === 1 ? 'espécie' : 'espécies'}</div>
+
+      <div class="meta-row">
+        <span class="label">Raio máximo</span>
+        <span class="value orange">${group.maxRadius}m <small style="color:var(--text-muted);font-size:10px;font-weight:400">est.</small></span>
+      </div>
+
+      ${city ? `
+      <div class="meta-row">
+        <span class="label">Cidade</span>
+        <span class="value">${city}</span>
+      </div>` : ''}
+
+      ${ownerName ? `
+      <div class="meta-row">
+        <span class="label">Criador</span>
+        <span class="value">${ownerName}</span>
+      </div>` : ''}
+
+      <div class="site-species-list">${speciesRows}</div>
+
+      ${group.representative.approximate_location ? `
+      <div class="approx-notice" title="A localização exata foi ocultada para proteger a privacidade do criador">
+        <span aria-hidden="true">◎</span>
+        <span>Localização aproximada · privacidade preservada</span>
+      </div>` : ''}
+
+      ${firstSlug ? `
+      <div style="margin-top:12px;">
+        <a href="${window.urbeiaSEO?.hiveUrl(hives[0].public_slug) || `h.html?slug=${firstSlug}`}" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,107,53,0.3);padding-bottom:2px;">
+          Ver primeira caixa →
+        </a>
+      </div>` : ''}
+    </div>
+  `;
+}
+
 function isMobileMap() {
   return window.matchMedia('(max-width: 768px)').matches;
 }
 
-function showMobileHiveSheet(hive, species) {
+function showMobileHiveSheet(contentHTML) {
   const sheet = document.getElementById('mobile-hive-sheet');
   const content = document.getElementById('mobile-hive-content');
   const filterSheet = document.querySelector('.sidebar');
   if (!sheet || !content) return;
 
-  content.innerHTML = buildPopup(hive, species);
+  content.innerHTML = contentHTML;
   sheet.classList.add('is-open');
   sheet.setAttribute('aria-hidden', 'false');
   document.body.classList.add('mobile-detail-open');
@@ -136,38 +253,43 @@ function getVisible() {
 function renderHives() {
   _state.hivesLayer.clearLayers();
   const visible = getVisible();
+  const groups = buildSiteGroups(visible);
 
-  visible.forEach(hive => {
-    const species = window.urbeiaSpecies.get(hive.species_slug);
-    const color   = hive.is_urbeia_verified ? '#ff6b35' : '#06d6a0';
-    const [lat, lng] = hive._displayCoords;
+  groups.forEach(group => {
+    const color = group.isMixed ? '#f5c518' : (group.hasVerified ? '#ff6b35' : '#06d6a0');
+    const [lat, lng] = group.coords;
 
     // Pollination circle
     L.circle([lat, lng], {
-      radius:      species?.pollination_radius_m || 500,
+      radius:      group.maxRadius,
       color,
       fillColor:   color,
       fillOpacity: 0.06,
       weight:      1.5,
       opacity:     0.35,
-      dashArray:   hive.is_urbeia_verified ? null : '5 5',
+      dashArray:   group.hasVerified ? null : '5 5',
     }).addTo(_state.hivesLayer);
 
     // Custom pin
-    const pinHtml = hive.is_urbeia_verified
-      ? `<div class="custom-pin-wrapper"><div class="pin-pulse"></div><div class="custom-pin verified"></div></div>`
-      : `<div class="custom-pin community"></div>`;
+    const pinHtml = group.isAggregate
+      ? `<div class="site-pin ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}">${group.hives.length}</div>`
+      : (group.hasVerified
+          ? `<div class="custom-pin-wrapper"><div class="pin-pulse"></div><div class="custom-pin verified"></div></div>`
+          : `<div class="custom-pin community"></div>`);
+    const iconSize = group.isAggregate ? [34, 34] : [24, 24];
+    const iconAnchor = group.isAggregate ? [17, 17] : [12, 12];
 
     const marker = L.marker([lat, lng], {
-      icon: L.divIcon({ html: pinHtml, className: 'custom-pin-icon', iconSize: [24, 24], iconAnchor: [12, 12] }),
+      icon: L.divIcon({ html: pinHtml, className: 'custom-pin-icon', iconSize, iconAnchor }),
     }).addTo(_state.hivesLayer);
 
-    marker.bindPopup(buildPopup(hive, species), { closeButton: true, autoClose: true, maxWidth: 280 });
+    const popupHTML = buildSitePopup(group);
+    marker.bindPopup(popupHTML, { closeButton: true, autoClose: true, maxWidth: 300 });
     marker.on('click', e => {
       if (isMobileMap()) {
         if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
         _state.map.closePopup();
-        showMobileHiveSheet(hive, species);
+        showMobileHiveSheet(popupHTML);
       }
     });
   });

@@ -888,6 +888,15 @@ a.filter-toggle { text-decoration: none; }
 /* Custom pins */
 .custom-pin-icon { background: transparent !important; border: none !important; }
 
+.leaflet-marker-icon.custom-pin-icon,
+.leaflet-marker-icon.custom-pin-icon * {
+  box-sizing: border-box;
+}
+
+.leaflet-marker-icon.custom-pin-icon img {
+  max-width: 100% !important;
+}
+
 .hive-box-pin {
   position: relative;
   width: 28px;

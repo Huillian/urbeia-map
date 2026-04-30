@@ -295,10 +295,10 @@ function renderHives() {
 
     // Custom pin
     const pinHtml = group.isAggregate
-      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}"><img src="assets/img/icone-meliponario.png" alt="" width="40"><span class="site-pin-count">${group.hives.length}</span></div>`
+      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}" style="width:42px;height:34px"><img src="assets/img/icone-meliponario.png" alt="" width="40" style="width:40px;max-width:40px;height:auto"><span class="site-pin-count">${group.hives.length}</span></div>`
       : (group.hasVerified
-          ? `<div class="hive-box-pin verified"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt="" width="28"></div>`
-          : `<div class="hive-box-pin community"><img src="assets/img/hive-box-icon.png" alt="" width="28"></div>`);
+          ? `<div class="hive-box-pin verified" style="width:28px;height:36px"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`
+          : `<div class="hive-box-pin community" style="width:28px;height:36px"><img src="assets/img/hive-box-icon.png" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`);
     const iconSize = group.isAggregate ? [42, 34] : [28, 36];
     const iconAnchor = group.isAggregate ? [21, 31] : [14, 33];
 

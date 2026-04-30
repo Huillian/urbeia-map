@@ -185,7 +185,7 @@ function placePinAt(lat, lng) {
     _marker = L.marker([lat, lng], {
       draggable: true,
       icon: L.divIcon({
-        html: `<div class="hive-box-pin form"><img src="assets/img/hive-box-icon.png" alt="" width="30"></div>`,
+        html: `<div class="hive-box-pin form" style="width:30px;height:38px"><img src="assets/img/hive-box-icon.png" alt="" width="30" style="width:30px;max-width:30px;height:auto"></div>`,
         className: 'custom-pin-icon',
         iconSize: [30, 38],
         iconAnchor: [15, 35],

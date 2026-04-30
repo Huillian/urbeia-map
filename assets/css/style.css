@@ -370,6 +370,10 @@ html, body {
   line-height: 1.3;
 }
 
+.sidebar .stats-grid .stat-card {
+  min-width: 0;
+}
+
 /* Filter toggles */
 .filter-group { display: flex; flex-direction: column; gap: 6px; }
 

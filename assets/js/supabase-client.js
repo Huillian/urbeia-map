@@ -52,7 +52,7 @@ window.urbeiaDB = {
     if (!user) throw new Error('Não autenticado');
     const { data, error } = await _client
       .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url')
+      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url, photo_review_status, data_quality_status')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     if (error) throw new Error(`getUserHives: ${error.message}`);

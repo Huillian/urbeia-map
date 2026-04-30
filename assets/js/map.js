@@ -145,11 +145,22 @@ function updateStats(visible) {
   const total    = visible.length;
   const verified = visible.filter(h => h.is_urbeia_verified).length;
   const species  = new Set(visible.map(h => h.species_slug)).size;
+  const cities   = new Set(visible.map(h => h.city).filter(Boolean)).size;
+  const radii    = visible
+    .map(h => window.urbeiaSpecies.get(h.species_slug)?.pollination_radius_m)
+    .filter(Boolean);
+  const totalAreaHa = radii.reduce((sum, radius) => sum + (Math.PI * radius * radius) / 10000, 0);
+  const avgRadius = radii.length
+    ? Math.round(radii.reduce((sum, radius) => sum + radius, 0) / radii.length)
+    : 0;
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('stat-total',   total);
   set('stat-verified', verified);
   set('stat-species', species);
+  set('stat-area', totalAreaHa ? Math.round(totalAreaHa).toLocaleString('pt-BR') : '0');
+  set('stat-cities', cities);
+  set('stat-radius', avgRadius ? `${avgRadius}m` : '—');
 }
 
 function renderTypeFilterCounts() {

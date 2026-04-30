@@ -605,8 +605,13 @@
       };
 
       if (photoUrl) {
-        if (_isAdmin) patch.photo_url = photoUrl;
-        else patch.pending_photo_url = photoUrl;
+        if (_isAdmin) {
+          patch.photo_url = photoUrl;
+          patch.photo_review_status = 'approved';
+        } else {
+          patch.pending_photo_url = photoUrl;
+          patch.photo_review_status = 'pending';
+        }
       }
 
       await window.urbeiaDB.updateHive(id, patch);

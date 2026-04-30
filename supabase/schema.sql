@@ -39,6 +39,17 @@ CREATE TABLE IF NOT EXISTS hives (
   rejected_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   approved_at TIMESTAMPTZ,
+  reviewed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
+  photo_review_status TEXT DEFAULT 'none'
+    CHECK (photo_review_status IN ('none', 'pending', 'approved', 'rejected')),
+  photo_rejected_reason TEXT,
+  data_quality_status TEXT DEFAULT 'unreviewed'
+    CHECK (data_quality_status IN ('unreviewed', 'needs_review', 'verified', 'rejected')),
+  location_plausible BOOLEAN,
+  species_plausible BOOLEAN,
+  photo_valid BOOLEAN,
+  content_appropriate BOOLEAN,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

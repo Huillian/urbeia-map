@@ -213,7 +213,7 @@
     /* ── STATS ── */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-bottom: 28px;
     }
@@ -244,6 +244,7 @@
     .stat-card.highlight-pending .stat-value { color: var(--yellow); }
     .stat-card.highlight-verified .stat-value { color: var(--orange); }
     .stat-card.highlight-approved .stat-value { color: var(--green); }
+    .stat-card.highlight-photo .stat-value { color: var(--orange); }
 
     /* ── TABLE SECTION ── */
     .table-section {
@@ -574,6 +575,44 @@
       padding: 10px 12px;
     }
 
+    .quality-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .quality-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--item-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+
+    .quality-check input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--orange);
+      flex-shrink: 0;
+    }
+
+    .btn-quality-save {
+      padding: 8px 12px;
+      background: var(--orange);
+      color: #0a0a0e;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     #detail-photo img {
       width: 100%;
       max-height: 200px;
@@ -710,6 +749,7 @@
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .admin-email { display: none; }
       .detail-grid { grid-template-columns: 1fr; }
+      .quality-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
@@ -773,6 +813,10 @@
         <div class="stat-label">Verified</div>
         <div class="stat-value" id="stat-verified">—</div>
       </div>
+      <div class="stat-card highlight-photo">
+        <div class="stat-label">Fotos pendentes</div>
+        <div class="stat-value" id="stat-photos">—</div>
+      </div>
     </div>
 
     <!-- Table -->
@@ -783,6 +827,10 @@
           <button class="filter-tab active" data-filter="pending">
             Pendentes
             <span class="pending-badge" id="pending-badge" aria-label="caixas pendentes"></span>
+          </button>
+          <button class="filter-tab" data-filter="photos">
+            Fotos
+            <span class="pending-badge" id="photo-badge" aria-label="fotos pendentes"></span>
           </button>
           <button class="filter-tab" data-filter="approved">Aprovadas</button>
           <button class="filter-tab" data-filter="rejected">Rejeitadas</button>
@@ -871,11 +919,32 @@
           <div class="detail-label">Cadastrada em</div>
           <div class="detail-value" id="detail-created" style="font-family:var(--font-mono);font-size:11px;"></div>
         </div>
+        <div class="detail-field">
+          <div class="detail-label">Foto</div>
+          <div class="detail-value" id="detail-photo-status"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Qualidade</div>
+          <div class="detail-value" id="detail-quality-status"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-label">Revisada em</div>
+          <div class="detail-value" id="detail-reviewed" style="font-family:var(--font-mono);font-size:11px;"></div>
+        </div>
         <div class="detail-field" style="grid-column: 1 / -1;">
           <div class="detail-label">Slug público</div>
           <div class="detail-value" id="detail-slug" style="font-family:var(--font-mono);font-size:11px;"></div>
         </div>
       </div>
+
+      <div class="detail-section-title">Checklist de qualidade</div>
+      <div class="quality-grid">
+        <label class="quality-check"><input type="checkbox" id="quality-location" /> Localização plausível</label>
+        <label class="quality-check"><input type="checkbox" id="quality-species" /> Espécie plausível</label>
+        <label class="quality-check"><input type="checkbox" id="quality-photo" /> Foto válida</label>
+        <label class="quality-check"><input type="checkbox" id="quality-content" /> Conteúdo apropriado</label>
+      </div>
+      <button class="btn-quality-save" id="btn-save-quality" type="button">Salvar qualidade dos dados</button>
 
       <div class="detail-section-title">Observação</div>
       <div class="detail-note" id="detail-note"></div>

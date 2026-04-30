@@ -53,10 +53,11 @@ async function loadSpecies() {
 async function loadHives(filter = 'pending') {
   let query = _db
     .from('hives')
-    .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, owner_email, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url')
+    .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, owner_email, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url, photo_review_status, photo_rejected_reason, data_quality_status, location_plausible, species_plausible, photo_valid, content_appropriate, reviewed_by, reviewed_at')
     .order('created_at', { ascending: false });
 
-  if (filter !== 'all') query = query.eq('status', filter);
+  if (filter === 'photos') query = query.eq('photo_review_status', 'pending');
+  else if (filter !== 'all') query = query.eq('status', filter);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -77,21 +78,26 @@ async function deleteHive(id) {
 async function loadStats() {
   const { data, error } = await _db
     .from('hives')
-    .select('status, is_urbeia_verified');
+    .select('status, is_urbeia_verified, photo_review_status');
   if (error) return;
 
   const total    = data.length;
   const pending  = data.filter(h => h.status === 'pending').length;
   const approved = data.filter(h => h.status === 'approved').length;
   const verified = data.filter(h => h.is_urbeia_verified).length;
+  const photoPending = data.filter(h => h.photo_review_status === 'pending').length;
 
   document.getElementById('stat-total').textContent    = total;
   document.getElementById('stat-pending').textContent  = pending;
   document.getElementById('stat-approved').textContent = approved;
   document.getElementById('stat-verified').textContent = verified;
+  document.getElementById('stat-photos').textContent   = photoPending;
 
   const badge = document.getElementById('pending-badge');
   if (badge) badge.textContent = pending > 0 ? pending : '';
+
+  const photoBadge = document.getElementById('photo-badge');
+  if (photoBadge) photoBadge.textContent = photoPending > 0 ? photoPending : '';
 }
 
 // ── Render table ───────────────────────────────────────────────────
@@ -119,6 +125,25 @@ function verifiedBadge(is_verified) {
   return is_verified
     ? '<span class="badge badge-verified">✦ Verified</span>'
     : '';
+}
+
+function photoBadge(status) {
+  const map = {
+    pending:  '<span class="badge badge-pending">foto pendente</span>',
+    approved: '<span class="badge badge-approved">foto aprovada</span>',
+    rejected: '<span class="badge badge-rejected">foto rejeitada</span>',
+  };
+  return map[status] || '';
+}
+
+function qualityBadge(status) {
+  const map = {
+    unreviewed:   '<span class="badge">dados sem revisão</span>',
+    needs_review: '<span class="badge badge-pending">dados em revisão</span>',
+    verified:     '<span class="badge badge-approved">dados verificados</span>',
+    rejected:     '<span class="badge badge-rejected">dados rejeitados</span>',
+  };
+  return map[status] || '';
 }
 
 function formatDate(iso) {
@@ -166,12 +191,18 @@ function renderTable(hives) {
       <td class="col-status">
         ${statusBadge(h.status)}
         ${verifiedBadge(h.is_urbeia_verified)}
+        ${photoBadge(h.photo_review_status)}
+        ${qualityBadge(h.data_quality_status)}
       </td>
       <td class="col-owner">${esc(h.owner_name || '—')}</td>
       <td class="col-actions">
         ${h.status === 'pending' ? `
           <button class="btn-action btn-approve" data-id="${esc(h.id)}" title="Aprovar">✓</button>
           <button class="btn-action btn-reject"  data-id="${esc(h.id)}" title="Rejeitar">✕</button>
+        ` : ''}
+        ${h.photo_review_status === 'pending' ? `
+          <button class="btn-action btn-photo-approve" data-id="${esc(h.id)}" title="Aprovar foto">F✓</button>
+          <button class="btn-action btn-photo-reject"  data-id="${esc(h.id)}" title="Rejeitar foto">F✕</button>
         ` : ''}
         ${h.status === 'approved' && !h.is_urbeia_verified ? `
           <button class="btn-action btn-verify" data-id="${esc(h.id)}" title="Marcar como Urbeia Verified">✦</button>
@@ -205,6 +236,15 @@ async function openDetail(id) {
   document.getElementById('detail-note').textContent      = h.note || '—';
   document.getElementById('detail-created').textContent   = h.created_at ? new Date(h.created_at).toLocaleString('pt-BR') : '—';
   document.getElementById('detail-slug').textContent      = h.public_slug || '—';
+  document.getElementById('detail-photo-status').innerHTML = photoBadge(h.photo_review_status) || '<span class="badge">sem foto</span>';
+  document.getElementById('detail-quality-status').innerHTML = qualityBadge(h.data_quality_status);
+  document.getElementById('detail-reviewed').textContent = h.reviewed_at ? new Date(h.reviewed_at).toLocaleString('pt-BR') : '—';
+
+  document.getElementById('quality-location').checked = h.location_plausible === true;
+  document.getElementById('quality-species').checked = h.species_plausible === true;
+  document.getElementById('quality-photo').checked = h.photo_valid === true;
+  document.getElementById('quality-content').checked = h.content_appropriate === true;
+  document.getElementById('btn-save-quality').dataset.id = h.id;
 
   const photoEl = document.getElementById('detail-photo');
   const displayPhoto = h.pending_photo_url || h.photo_url;
@@ -234,6 +274,13 @@ function closeDetail() {
   modal.style.display = 'none';
   modal.setAttribute('aria-hidden', 'true');
 }
+
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('#btn-save-quality');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (id) await saveQuality(id);
+});
 
 // ── Reject modal ───────────────────────────────────────────────────
 let _rejectTargetId = null;
@@ -272,9 +319,12 @@ async function approve(id) {
     const patch = {
       status: 'approved',
       rejected_reason: null,
+      data_quality_status: 'verified',
       ...(hive?.pending_photo_url && {
         photo_url: hive.pending_photo_url,
         pending_photo_url: null,
+        photo_review_status: 'approved',
+        photo_rejected_reason: null,
       }),
     };
     await updateHive(id, patch);
@@ -287,8 +337,69 @@ async function approve(id) {
 
 async function reject(id, reason) {
   try {
-    await updateHive(id, { status: 'rejected', rejected_reason: reason || null, pending_photo_url: null });
+    await updateHive(id, {
+      status: 'rejected',
+      rejected_reason: reason || null,
+      pending_photo_url: null,
+      data_quality_status: 'rejected',
+      ...(reason && { photo_rejected_reason: reason }),
+    });
     showToast('Caixa rejeitada.');
+    await refresh();
+  } catch (err) {
+    showToast(`Erro: ${err.message}`, 'error');
+  }
+}
+
+async function approvePhoto(id) {
+  try {
+    const hive = _currentHives.find(h => h.id === id);
+    if (!hive?.pending_photo_url) return;
+    await updateHive(id, {
+      photo_url: hive.pending_photo_url,
+      pending_photo_url: null,
+      photo_review_status: 'approved',
+      photo_rejected_reason: null,
+      photo_valid: true,
+      content_appropriate: true,
+    });
+    showToast('Foto aprovada.');
+    await refresh();
+  } catch (err) {
+    showToast(`Erro: ${err.message}`, 'error');
+  }
+}
+
+async function rejectPhoto(id) {
+  try {
+    await updateHive(id, {
+      pending_photo_url: null,
+      photo_review_status: 'rejected',
+      photo_rejected_reason: 'Foto rejeitada na moderação.',
+      photo_valid: false,
+      content_appropriate: false,
+    });
+    showToast('Foto rejeitada.');
+    await refresh();
+  } catch (err) {
+    showToast(`Erro: ${err.message}`, 'error');
+  }
+}
+
+async function saveQuality(id) {
+  try {
+    const flags = {
+      location_plausible: document.getElementById('quality-location').checked,
+      species_plausible: document.getElementById('quality-species').checked,
+      photo_valid: document.getElementById('quality-photo').checked,
+      content_appropriate: document.getElementById('quality-content').checked,
+    };
+    const allOk = Object.values(flags).every(Boolean);
+    await updateHive(id, {
+      ...flags,
+      data_quality_status: allOk ? 'verified' : 'needs_review',
+    });
+    showToast('Qualidade dos dados salva.');
     await refresh();
   } catch (err) {
     showToast(`Erro: ${err.message}`, 'error');
@@ -342,6 +453,8 @@ function initTableEvents() {
 
     if (btn.classList.contains('btn-approve'))  { await approve(id); return; }
     if (btn.classList.contains('btn-reject'))   { openRejectModal(id); return; }
+    if (btn.classList.contains('btn-photo-approve')) { await approvePhoto(id); return; }
+    if (btn.classList.contains('btn-photo-reject'))  { await rejectPhoto(id); return; }
     if (btn.classList.contains('btn-verify'))   { await setVerified(id, true); return; }
     if (btn.classList.contains('btn-unverify')) { await setVerified(id, false); return; }
     if (btn.classList.contains('btn-details'))  { await openDetail(id); return; }

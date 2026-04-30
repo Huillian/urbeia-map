@@ -376,10 +376,14 @@ async function handleSubmit(e) {
 
     if (_isAdmin) {
       hiveData.photo_url = photoUrl;
+      hiveData.photo_review_status = photoUrl ? 'approved' : 'none';
+      hiveData.data_quality_status = 'verified';
       const isVerified = document.getElementById('field-verified')?.checked ?? true;
       await window.urbeiaDB.submitHiveAdmin(hiveData, isVerified);
     } else {
       hiveData.pending_photo_url = photoUrl;
+      hiveData.photo_review_status = photoUrl ? 'pending' : 'none';
+      hiveData.data_quality_status = 'needs_review';
       await window.urbeiaDB.submitHive(hiveData);
     }
     showSuccess();

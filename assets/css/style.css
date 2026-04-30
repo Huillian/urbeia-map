@@ -139,6 +139,18 @@ html, body {
   min-width: 0;
 }
 
+body.page-standard .topbar {
+  overflow: hidden;
+}
+
+body.page-standard .topbar-right {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.page-standard .topbar-right::-webkit-scrollbar { display: none; }
+
 .nav-user {
   position: relative;
   display: flex;
@@ -979,7 +991,28 @@ a.filter-toggle { text-decoration: none; }
 
   .location-badge { display: none; }
 
-  .topbar-right .nav-link { display: none; }
+  body:not(.page-standard) .topbar-right .nav-link { display: none; }
+
+  body.page-standard .topbar {
+    align-items: stretch;
+  }
+
+  body.page-standard .topbar-actions {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  body.page-standard .topbar-right {
+    max-width: 100%;
+    padding: 10px 0;
+  }
+
+  body.page-standard .topbar-right .nav-link,
+  body.page-standard .topbar-right .btn-cta {
+    flex: 0 0 auto;
+    min-height: 36px;
+  }
 
   .stats-grid {
     display: flex;

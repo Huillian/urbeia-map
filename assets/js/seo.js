@@ -6,7 +6,8 @@ window.urbeiaSEO = (() => {
   function absoluteUrl(pathOrUrl) {
     if (!pathOrUrl) return DEFAULT_IMAGE;
     if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
-    return `${SITE_URL}${pathOrUrl.startsWith('/') ? '' : '/'}${pathOrUrl}`;
+    const origin = window.location.origin || SITE_URL;
+    return `${origin}${pathOrUrl.startsWith('/') ? '' : '/'}${pathOrUrl}`;
   }
 
   function hiveUrl(slug) {

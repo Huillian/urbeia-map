@@ -1,7 +1,12 @@
 const SUPABASE_URL = 'https://eerqznktkxxuecbrsbsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcnF6bmt0a3h4dWVjYnJzYnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTc5NzYsImV4cCI6MjA5MjM3Mzk3Nn0.wvsMf8s0M9LeJHPUagI_sqcWzxFtmnpLIt7mggsAeLY';
-const SITE_URL = 'https://map.urbeia.com.br';
-const DEFAULT_IMAGE = `${SITE_URL}/assets/img/og-cover.png`;
+
+function getSiteUrl(event) {
+  const headers = event.headers || {};
+  const host = headers.host || headers.Host || 'urbeia-map.netlify.app';
+  const proto = headers['x-forwarded-proto'] || headers['X-Forwarded-Proto'] || 'https';
+  return `${proto}://${host}`;
+}
 
 function escapeHTML(value) {
   return String(value || '')
@@ -24,11 +29,12 @@ async function fetchOne(path) {
   return res.json();
 }
 
-function html({ title, description, canonical, redirect, robots = 'index, follow' }) {
+function html({ title, description, canonical, redirect, image, robots = 'index, follow' }) {
   const safeTitle = escapeHTML(title);
   const safeDescription = escapeHTML(description);
   const safeCanonical = escapeHTML(canonical);
   const safeRedirect = escapeHTML(redirect);
+  const safeImage = escapeHTML(image);
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -45,14 +51,14 @@ function html({ title, description, canonical, redirect, robots = 'index, follow
   <meta property="og:url" content="${safeCanonical}" />
   <meta property="og:title" content="${safeTitle}" />
   <meta property="og:description" content="${safeDescription}" />
-  <meta property="og:image" content="${DEFAULT_IMAGE}" />
+  <meta property="og:image" content="${safeImage}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="pt_BR" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${safeTitle}" />
   <meta name="twitter:description" content="${safeDescription}" />
-  <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
+  <meta name="twitter:image" content="${safeImage}" />
   <script>location.replace(${JSON.stringify(redirect)});</script>
 </head>
 <body>
@@ -64,6 +70,8 @@ function html({ title, description, canonical, redirect, robots = 'index, follow
 exports.handler = async event => {
   const slug = event.queryStringParameters?.slug || '';
   const safeSlug = slug.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+  const siteUrl = getSiteUrl(event);
+  const defaultImage = `${siteUrl}/assets/img/og-cover.png`;
 
   if (!safeSlug) {
     return {
@@ -72,8 +80,9 @@ exports.handler = async event => {
       body: html({
         title: 'Caixa não encontrada · Urbeia Map',
         description: 'Esta caixa não existe ou ainda não foi aprovada.',
-        canonical: `${SITE_URL}/h/${safeSlug}/`,
-        redirect: `${SITE_URL}/h.html`,
+        canonical: `${siteUrl}/h/`,
+        redirect: `${siteUrl}/h.html`,
+        image: defaultImage,
         robots: 'noindex, nofollow',
       }),
     };
@@ -90,8 +99,9 @@ exports.handler = async event => {
       body: html({
         title: 'Caixa não encontrada · Urbeia Map',
         description: 'Esta caixa não existe ou ainda não foi aprovada.',
-        canonical: `${SITE_URL}/h/${safeSlug}/`,
-        redirect: `${SITE_URL}/h.html?slug=${encodeURIComponent(safeSlug)}`,
+        canonical: `${siteUrl}/h/${safeSlug}/`,
+        redirect: `${siteUrl}/h.html?slug=${encodeURIComponent(safeSlug)}`,
+        image: defaultImage,
         robots: 'noindex, nofollow',
       }),
     };
@@ -115,8 +125,9 @@ exports.handler = async event => {
     body: html({
       title,
       description,
-      canonical: `${SITE_URL}/h/${safeSlug}/`,
-      redirect: `${SITE_URL}/h.html?slug=${encodeURIComponent(safeSlug)}`,
+      canonical: `${siteUrl}/h/${safeSlug}/`,
+      redirect: `${siteUrl}/h.html?slug=${encodeURIComponent(safeSlug)}`,
+      image: defaultImage,
     }),
   };
 };

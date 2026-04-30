@@ -1038,34 +1038,6 @@ a.filter-toggle { text-decoration: none; }
   100% { opacity: 0;   transform: translateX(-50%) scale(1.6); }
 }
 
-/* ── LOCATION BADGE ──────────────────────────────── */
-.location-badge {
-  position: fixed;
-  bottom: 20px; left: 16px;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  backdrop-filter: blur(24px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-dim);
-  pointer-events: none;
-}
-
-.location-badge .pin {
-  width: 7px; height: 7px;
-  background: var(--orange);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--orange);
-  animation: pulse 2s infinite;
-  flex-shrink: 0;
-}
-
 /* ── THEME TOGGLE ────────────────────────────────── */
 .topbar-actions {
   display: flex;
@@ -1218,8 +1190,6 @@ a.filter-toggle { text-decoration: none; }
   }
 
   .brand-sub { display: none; }
-
-  .location-badge { display: none; }
 
   body:not(.page-standard) .topbar-right .nav-link { display: none; }
 

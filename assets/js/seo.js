@@ -12,8 +12,7 @@ window.urbeiaSEO = (() => {
 
   function hiveUrl(slug) {
     const encoded = encodeURIComponent(slug || '');
-    const isLocal = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
-    return isLocal ? `/h.html?slug=${encoded}` : `/h/${encoded}/`;
+    return `/h.html?slug=${encoded}`;
   }
 
   function upsertMeta(selector, attrs) {

@@ -295,12 +295,12 @@ function renderHives() {
 
     // Custom pin
     const pinHtml = group.isAggregate
-      ? `<div class="site-pin ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}">${group.hives.length}</div>`
+      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}"><img src="assets/img/hive-box-icon.png" alt=""><span class="site-pin-count">${group.hives.length}</span></div>`
       : (group.hasVerified
-          ? `<div class="custom-pin-wrapper"><div class="pin-pulse"></div><div class="custom-pin verified"></div></div>`
-          : `<div class="custom-pin community"></div>`);
-    const iconSize = group.isAggregate ? [34, 34] : [24, 24];
-    const iconAnchor = group.isAggregate ? [17, 17] : [12, 12];
+          ? `<div class="hive-box-pin verified"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt=""></div>`
+          : `<div class="hive-box-pin community"><img src="assets/img/hive-box-icon.png" alt=""></div>`);
+    const iconSize = [42, 54];
+    const iconAnchor = [21, 50];
 
     const marker = L.marker([lat, lng], {
       icon: L.divIcon({ html: pinHtml, className: 'custom-pin-icon', iconSize, iconAnchor }),

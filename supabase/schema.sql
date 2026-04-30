@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS hives (
   owner_email TEXT,      -- PRIVADO — só admin vê
   note TEXT,
   photo_url TEXT,
+  pending_photo_url TEXT,
   is_urbeia_verified BOOLEAN DEFAULT false,
   status TEXT DEFAULT 'pending'
     CHECK (status IN ('pending', 'approved', 'rejected')),

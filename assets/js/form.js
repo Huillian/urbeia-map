@@ -371,14 +371,15 @@ async function handleSubmit(e) {
       owner_name:           ownerName || null,
       owner_email:          ownerEmail || null,
       note:                 note || null,
-      photo_url:            photoUrl,
       user_id:              session.user.id,
     };
 
     if (_isAdmin) {
+      hiveData.photo_url = photoUrl;
       const isVerified = document.getElementById('field-verified')?.checked ?? true;
       await window.urbeiaDB.submitHiveAdmin(hiveData, isVerified);
     } else {
+      hiveData.pending_photo_url = photoUrl;
       await window.urbeiaDB.submitHive(hiveData);
     }
     showSuccess();

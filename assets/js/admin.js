@@ -53,7 +53,7 @@ async function loadSpecies() {
 async function loadHives(filter = 'pending') {
   let query = _db
     .from('hives')
-    .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, owner_email, note, installed_at, city, state, status, rejected_reason, created_at, photo_url')
+    .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, owner_email, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url')
     .order('created_at', { ascending: false });
 
   if (filter !== 'all') query = query.eq('status', filter);
@@ -126,6 +126,22 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
+async function getPhotoUrl(pathOrUrl) {
+  if (!pathOrUrl) return null;
+
+  let path = pathOrUrl;
+  const marker = '/hive-photos/';
+  if (pathOrUrl.startsWith('http') && pathOrUrl.includes(marker)) {
+    path = decodeURIComponent(pathOrUrl.split(marker)[1]);
+  } else if (pathOrUrl.startsWith('http')) {
+    return pathOrUrl;
+  }
+
+  const { data, error } = await _db.storage.from('hive-photos').createSignedUrl(path, 60 * 60);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
 function renderTable(hives) {
   _currentHives = hives;
   const tbody = document.getElementById('hives-tbody');
@@ -171,7 +187,7 @@ function renderTable(hives) {
 }
 
 // ── Detail modal ───────────────────────────────────────────────────
-function openDetail(id) {
+async function openDetail(id) {
   const h = _currentHives.find(x => x.id === id);
   if (!h) return;
 
@@ -191,8 +207,11 @@ function openDetail(id) {
   document.getElementById('detail-slug').textContent      = h.public_slug || '—';
 
   const photoEl = document.getElementById('detail-photo');
-  if (h.photo_url) {
-    photoEl.innerHTML = `<img src="${esc(h.photo_url)}" alt="Foto da caixa" loading="lazy" />`;
+  const displayPhoto = h.pending_photo_url || h.photo_url;
+  if (displayPhoto) {
+    const signedUrl = await getPhotoUrl(displayPhoto);
+    const label = h.pending_photo_url ? 'Foto pendente de aprovação' : 'Foto da caixa';
+    photoEl.innerHTML = `<img src="${esc(signedUrl)}" alt="${label}" loading="lazy" />`;
   } else {
     photoEl.innerHTML = '<span class="no-photo">Sem foto</span>';
   }
@@ -249,7 +268,16 @@ function showToast(msg, type = 'success') {
 // ── Actions ────────────────────────────────────────────────────────
 async function approve(id) {
   try {
-    await updateHive(id, { status: 'approved' });
+    const hive = _currentHives.find(h => h.id === id);
+    const patch = {
+      status: 'approved',
+      rejected_reason: null,
+      ...(hive?.pending_photo_url && {
+        photo_url: hive.pending_photo_url,
+        pending_photo_url: null,
+      }),
+    };
+    await updateHive(id, patch);
     showToast('Caixa aprovada.');
     await refresh();
   } catch (err) {
@@ -259,7 +287,7 @@ async function approve(id) {
 
 async function reject(id, reason) {
   try {
-    await updateHive(id, { status: 'rejected', rejected_reason: reason || null });
+    await updateHive(id, { status: 'rejected', rejected_reason: reason || null, pending_photo_url: null });
     showToast('Caixa rejeitada.');
     await refresh();
   } catch (err) {
@@ -316,7 +344,7 @@ function initTableEvents() {
     if (btn.classList.contains('btn-reject'))   { openRejectModal(id); return; }
     if (btn.classList.contains('btn-verify'))   { await setVerified(id, true); return; }
     if (btn.classList.contains('btn-unverify')) { await setVerified(id, false); return; }
-    if (btn.classList.contains('btn-details'))  { openDetail(id); return; }
+    if (btn.classList.contains('btn-details'))  { await openDetail(id); return; }
     if (btn.classList.contains('btn-delete'))   { await remove(id); return; }
   });
 }

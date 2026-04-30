@@ -409,9 +409,11 @@
 <script>
   const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
   const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+  const ADMIN_EMAIL = 'huilliancomercial@gmail.com';
 
   let _species = {};
   let _hives   = [];
+  let _isAdmin = false;
 
   // ── Auth guard ─────────────────────────────────────────────────────
   async function guardAuth() {
@@ -491,19 +493,21 @@
     }
   }
 
-  function setPhotoPreview(src, alt) {
+  async function setPhotoPreview(src, alt) {
     const preview = document.getElementById('edit-photo-preview');
     preview.innerHTML = '';
     if (!src) return;
 
     const img = document.createElement('img');
-    img.src = src;
+    img.src = src.startsWith('blob:') || src.startsWith('data:')
+      ? src
+      : await window.urbeiaDB.getPhotoUrl(src);
     img.alt = alt || 'Foto da caixa';
     preview.appendChild(img);
   }
 
   // ── Edit modal ─────────────────────────────────────────────────────
-  function openEdit(id) {
+  async function openEdit(id) {
     const h = _hives.find(x => x.id === id);
     if (!h) return;
 
@@ -516,7 +520,7 @@
     document.getElementById('edit-species').value  = h.species_slug || '';
     document.getElementById('edit-error').textContent = '';
     document.getElementById('edit-photo').value = '';
-    setPhotoPreview(h.photo_url || '', h.nickname ? `Foto de ${h.nickname}` : 'Foto da caixa');
+    await setPhotoPreview(h.pending_photo_url || h.photo_url || '', h.nickname ? `Foto de ${h.nickname}` : 'Foto da caixa');
 
     const modal = document.getElementById('edit-modal');
     modal.style.display = 'flex';
@@ -537,7 +541,7 @@
     const id = btn.dataset.id;
 
     if (btn.classList.contains('btn-edit')) {
-      openEdit(id); return;
+      await openEdit(id); return;
     }
 
     if (btn.classList.contains('btn-delete')) {
@@ -553,20 +557,20 @@
     }
   });
 
-  document.getElementById('edit-photo').addEventListener('change', () => {
+  document.getElementById('edit-photo').addEventListener('change', async () => {
     const input = document.getElementById('edit-photo');
     const file = input.files[0];
     document.getElementById('edit-error').textContent = '';
 
     if (!file) {
       const hive = _hives.find(h => h.id === document.getElementById('edit-hive-id').value);
-      setPhotoPreview(hive?.photo_url || '', hive?.nickname ? `Foto de ${hive.nickname}` : 'Foto da caixa');
+      await setPhotoPreview(hive?.pending_photo_url || hive?.photo_url || '', hive?.nickname ? `Foto de ${hive.nickname}` : 'Foto da caixa');
       return;
     }
 
     try {
       validatePhoto(file);
-      setPhotoPreview(URL.createObjectURL(file), 'Preview da nova foto');
+      await setPhotoPreview(URL.createObjectURL(file), 'Preview da nova foto');
     } catch (err) {
       document.getElementById('edit-error').textContent = err.message;
       input.value = '';
@@ -600,17 +604,24 @@
         approximate_location: document.getElementById('edit-approx').checked,
       };
 
-      if (photoUrl) patch.photo_url = photoUrl;
+      if (photoUrl) {
+        if (_isAdmin) patch.photo_url = photoUrl;
+        else patch.pending_photo_url = photoUrl;
+      }
 
       await window.urbeiaDB.updateHive(id, patch);
 
       // Update local state
       const idx = _hives.findIndex(h => h.id === id);
-      if (idx !== -1) _hives[idx] = { ..._hives[idx], ...patch, status: 'pending', is_urbeia_verified: false };
+      if (idx !== -1) {
+        _hives[idx] = _isAdmin
+          ? { ..._hives[idx], ...patch }
+          : { ..._hives[idx], ...patch, status: 'pending', is_urbeia_verified: false };
+      }
 
       renderHives(_hives);
       closeEdit();
-      showToast('Caixa atualizada. Aguarda nova aprovação.');
+      showToast(_isAdmin ? 'Caixa atualizada.' : 'Caixa atualizada. Aguarda nova aprovação.');
     } catch (err) {
       document.getElementById('edit-error').textContent = `Erro: ${err.message}`;
     } finally {
@@ -648,6 +659,7 @@
     if (!session) return;
 
     const user = session.user;
+    _isAdmin = user.email === ADMIN_EMAIL;
     const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
     document.getElementById('nav-email').textContent = name;
 

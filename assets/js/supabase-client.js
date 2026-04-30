@@ -3,6 +3,7 @@
 
 const SUPABASE_URL     = 'https://eerqznktkxxuecbrsbsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcnF6bmt0a3h4dWVjYnJzYnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTc5NzYsImV4cCI6MjA5MjM3Mzk3Nn0.wvsMf8s0M9LeJHPUagI_sqcWzxFtmnpLIt7mggsAeLY';
+const URBEIA_ADMIN_EMAIL = 'huilliancomercial@gmail.com';
 
 const _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true },
@@ -51,7 +52,7 @@ window.urbeiaDB = {
     if (!user) throw new Error('Não autenticado');
     const { data, error } = await _client
       .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, status, rejected_reason, created_at, photo_url')
+      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, status, rejected_reason, created_at, photo_url, pending_photo_url')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     if (error) throw new Error(`getUserHives: ${error.message}`);
@@ -59,9 +60,16 @@ window.urbeiaDB = {
   },
 
   async updateHive(id, patch) {
+    const { data: { user } } = await _client.auth.getUser();
+    if (!user) throw new Error('Não autenticado');
+
+    const updatePayload = user.email === URBEIA_ADMIN_EMAIL
+      ? patch
+      : { ...patch, status: 'pending', is_urbeia_verified: false };
+
     const { error } = await _client
       .from('hives')
-      .update({ ...patch, status: 'pending', is_urbeia_verified: false })
+      .update(updatePayload)
       .eq('id', id);
     if (error) throw new Error(`updateHive: ${error.message}`);
   },
@@ -104,8 +112,25 @@ window.urbeiaDB = {
       .from('hive-photos')
       .upload(path, file, { contentType: file.type, upsert: false });
     if (error) throw new Error(`uploadPhoto: ${error.message}`);
-    const { data: urlData } = _client.storage.from('hive-photos').getPublicUrl(data.path);
-    return urlData.publicUrl;
+    return data.path;
+  },
+
+  async getPhotoUrl(pathOrUrl) {
+    if (!pathOrUrl) return null;
+
+    let path = pathOrUrl;
+    const marker = '/hive-photos/';
+    if (pathOrUrl.startsWith('http') && pathOrUrl.includes(marker)) {
+      path = decodeURIComponent(pathOrUrl.split(marker)[1]);
+    } else if (pathOrUrl.startsWith('http')) {
+      return pathOrUrl;
+    }
+
+    const { data, error } = await _client.storage
+      .from('hive-photos')
+      .createSignedUrl(path, 60 * 60);
+    if (error) throw new Error(`getPhotoUrl: ${error.message}`);
+    return data.signedUrl;
   },
 
   // ── Auth ──────────────────────────────────────────────────────────

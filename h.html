@@ -589,7 +589,7 @@
     // ── Photo ──
     if (hive.photo_url) {
       const img = document.getElementById('hive-photo');
-      img.src = hive.photo_url;
+      img.src = await window.urbeiaDB.getPhotoUrl(hive.photo_url);
       show('hive-photo');
     }
 

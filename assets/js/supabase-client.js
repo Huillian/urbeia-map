@@ -95,8 +95,11 @@ window.urbeiaDB = {
 
   // ── Storage ───────────────────────────────────────────────────────
   async uploadPhoto(file) {
+    const { data: { user } } = await _client.auth.getUser();
+    if (!user) throw new Error('uploadPhoto: usuário não autenticado');
+
     const ext  = file.name.split('.').pop().toLowerCase();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { data, error } = await _client.storage
       .from('hive-photos')
       .upload(path, file, { contentType: file.type, upsert: false });

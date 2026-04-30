@@ -19,7 +19,10 @@ function downloadBlob(filename, content, type) {
 function buildExportRows(hives, speciesBySlug) {
   return hives.map(hive => {
     const species = speciesBySlug[hive.species_slug] || {};
-    const canShareCoords = !hive.approximate_location;
+    const precision = hive.approximate_location ? 'approximate' : 'exact';
+    const coordDigits = hive.approximate_location ? 2 : 6;
+    const latPublic = hive.lat === null || hive.lat === undefined ? '' : Number(hive.lat).toFixed(coordDigits);
+    const lngPublic = hive.lng === null || hive.lng === undefined ? '' : Number(hive.lng).toFixed(coordDigits);
     return {
       public_slug: hive.public_slug || '',
       nickname: hive.nickname || '',
@@ -32,8 +35,10 @@ function buildExportRows(hives, speciesBySlug) {
       pollination_radius_m: species.pollination_radius_m || '',
       installed_at: hive.installed_at || '',
       approximate_location: Boolean(hive.approximate_location),
-      lat: canShareCoords ? hive.lat : '',
-      lng: canShareCoords ? hive.lng : '',
+      coordinate_precision: precision,
+      location_privacy_m: hive.approximate_location ? 1000 : 0,
+      lat_public: latPublic,
+      lng_public: lngPublic,
       public_url: hive.public_slug ? `${location.origin}/h.html?slug=${encodeURIComponent(hive.public_slug)}` : '',
     };
   });
@@ -52,8 +57,10 @@ function toCSV(rows) {
     'pollination_radius_m',
     'installed_at',
     'approximate_location',
-    'lat',
-    'lng',
+    'coordinate_precision',
+    'location_privacy_m',
+    'lat_public',
+    'lng_public',
     'public_url',
   ];
   const lines = [
@@ -108,7 +115,7 @@ async function initExportPage() {
         dataset: 'Urbeia Map - caixas aprovadas',
         generated_at: new Date().toISOString(),
         license: 'CC-BY 4.0',
-        privacy_note: 'Coordenadas são omitidas quando approximate_location=true.',
+        privacy_note: 'Coordenadas públicas usam lat_public/lng_public. Quando approximate_location=true, os valores são arredondados para 2 casas decimais e coordinate_precision=approximate.',
         records: rows,
       };
       downloadBlob('urbeia-map-caixas-aprovadas.json', JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');

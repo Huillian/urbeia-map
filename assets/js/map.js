@@ -172,7 +172,32 @@ function buildSitePopup(group) {
         <span class="value">${count} ${count === 1 ? 'caixa' : 'caixas'}</span>
       </div>
     `).join('');
-  const firstSlug = hives[0]?.public_slug ? encodeURIComponent(hives[0].public_slug) : null;
+  const hiveRows = hives
+    .slice()
+    .sort((a, b) => {
+      const nameA = a.nickname || window.urbeiaSpecies.get(a.species_slug)?.name_pt || '';
+      const nameB = b.nickname || window.urbeiaSpecies.get(b.species_slug)?.name_pt || '';
+      return nameA.localeCompare(nameB, 'pt-BR');
+    })
+    .map((hive, index) => {
+      const species = window.urbeiaSpecies.get(hive.species_slug);
+      const name = esc(hive.nickname) || `Caixa ${index + 1}`;
+      const speciesName = esc(species?.name_pt || hive.species_slug || 'Espécie não informada');
+      const statusClass = hive.is_urbeia_verified ? 'verified' : 'community';
+      const statusText = hive.is_urbeia_verified ? 'Verified' : 'Community';
+      const slug = hive.public_slug ? encodeURIComponent(hive.public_slug) : null;
+
+      return `
+        ${slug ? `<a class="site-hive-row" href="${window.urbeiaSEO?.hiveUrl(hive.public_slug) || `h.html?slug=${slug}`}">` : '<div class="site-hive-row">'}
+          <span class="site-hive-dot ${statusClass}" aria-hidden="true"></span>
+          <span class="site-hive-main">
+            <strong>${name}</strong>
+            <span>${speciesName} · ${statusText}</span>
+          </span>
+          ${slug ? '<span class="site-hive-arrow" aria-hidden="true">→</span>' : ''}
+        ${slug ? '</a>' : '</div>'}
+      `;
+    }).join('');
 
   return `
     <div class="hive-popup site-popup">
@@ -199,17 +224,15 @@ function buildSitePopup(group) {
 
       <div class="site-species-list">${speciesRows}</div>
 
+      <div class="site-hive-list">
+        <div class="site-list-title">Caixas neste local</div>
+        ${hiveRows}
+      </div>
+
       ${group.representative.approximate_location ? `
       <div class="approx-notice" title="A localização exata foi ocultada para proteger a privacidade do criador">
         <span aria-hidden="true">◎</span>
         <span>Localização aproximada · privacidade preservada</span>
-      </div>` : ''}
-
-      ${firstSlug ? `
-      <div style="margin-top:12px;">
-        <a href="${window.urbeiaSEO?.hiveUrl(hives[0].public_slug) || `h.html?slug=${firstSlug}`}" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,107,53,0.3);padding-bottom:2px;">
-          Ver primeira caixa →
-        </a>
       </div>` : ''}
     </div>
   `;

@@ -238,6 +238,13 @@ function buildSitePopup(group) {
   `;
 }
 
+function markerAsset(group) {
+  if (group.isAggregate) {
+    return group.hasVerified ? 'assets/img/meliponario-urbeia.png' : 'assets/img/meliponario-comunidade.png';
+  }
+  return group.hasVerified ? 'assets/img/caixa-urbeia.png' : 'assets/img/caixa-comunidade.png';
+}
+
 function isMobileMap() {
   return window.matchMedia('(max-width: 768px)').matches;
 }
@@ -294,11 +301,12 @@ function renderHives() {
     }).addTo(_state.hivesLayer);
 
     // Custom pin
+    const asset = markerAsset(group);
     const pinHtml = group.isAggregate
-      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}" style="width:42px;height:34px"><img src="assets/img/icone-meliponario.png" alt="" width="40" style="width:40px;max-width:40px;height:auto"><span class="site-pin-count">${group.hives.length}</span></div>`
+      ? `<div class="hive-box-pin aggregate ${group.isMixed ? 'mixed' : (group.hasVerified ? 'verified' : 'community')}" style="width:42px;height:34px"><img src="${asset}" alt="" width="40" style="width:40px;max-width:40px;height:auto"><span class="site-pin-count">${group.hives.length}</span></div>`
       : (group.hasVerified
-          ? `<div class="hive-box-pin verified" style="width:28px;height:36px"><div class="pin-pulse"></div><img src="assets/img/hive-box-icon.png" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`
-          : `<div class="hive-box-pin community" style="width:28px;height:36px"><img src="assets/img/hive-box-icon.png" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`);
+          ? `<div class="hive-box-pin verified" style="width:28px;height:36px"><div class="pin-pulse"></div><img src="${asset}" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`
+          : `<div class="hive-box-pin community" style="width:28px;height:36px"><img src="${asset}" alt="" width="28" style="width:28px;max-width:28px;height:auto"></div>`);
     const iconSize = group.isAggregate ? [42, 34] : [28, 36];
     const iconAnchor = group.isAggregate ? [21, 31] : [14, 33];
 

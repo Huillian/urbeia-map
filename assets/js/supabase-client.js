@@ -6,7 +6,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const URBEIA_ADMIN_EMAIL = 'huilliancomercial@gmail.com';
 
 const _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: false,
+  },
 });
 
 const _publicClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -17,6 +20,20 @@ const _publicClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
+async function fetchPublicData(resource, params = {}) {
+  const query = new URLSearchParams({ resource, ...params });
+  const res = await fetch(`/api/public-data?${query.toString()}`, {
+    headers: { Accept: 'application/json' },
+  });
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(payload?.error || `public-data: ${res.status}`);
+  }
+
+  return payload;
+}
+
 // Exposed for auth.js and other modules that need the raw client
 window._urbeiaClient = _client;
 
@@ -24,44 +41,64 @@ window.urbeiaDB = {
 
   // ── Species ──────────────────────────────────────────────────────
   async getSpecies() {
-    const { data, error } = await _publicClient
-      .from('species')
-      .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt, family_tribe, urban_indication, behavior, description, observations, nesting_type, key_plants, conservation_status, best_use, occurrence_regions')
-      .order('name_pt');
-    if (error) throw new Error(`getSpecies: ${error.message}`);
-    return data;
+    try {
+      return await fetchPublicData('species');
+    } catch (err) {
+      console.warn('Fallback direto ao Supabase para species:', err);
+      const { data, error } = await _publicClient
+        .from('species')
+        .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt, family_tribe, urban_indication, behavior, description, observations, nesting_type, key_plants, conservation_status, best_use, occurrence_regions')
+        .order('name_pt');
+      if (error) throw new Error(`getSpecies: ${error.message}`);
+      return data;
+    }
   },
 
   // ── Public hive queries ───────────────────────────────────────────
   // owner_email excluído intencionalmente — nunca retornado ao cliente público
   async getApprovedHives() {
-    const { data, error } = await _publicClient
-      .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
-      .eq('status', 'approved');
-    if (error) throw new Error(`getApprovedHives: ${error.message}`);
-    return data;
+    try {
+      return await fetchPublicData('hives');
+    } catch (err) {
+      console.warn('Fallback direto ao Supabase para hives:', err);
+      const { data, error } = await _publicClient
+        .from('hives')
+        .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
+        .eq('status', 'approved');
+      if (error) throw new Error(`getApprovedHives: ${error.message}`);
+      return data;
+    }
   },
 
   async getApprovedHivesBySpecies(speciesSlug) {
-    const { data, error } = await _publicClient
-      .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
-      .eq('status', 'approved')
-      .eq('species_slug', speciesSlug);
-    if (error) throw new Error(`getApprovedHivesBySpecies: ${error.message}`);
-    return data;
+    try {
+      return await fetchPublicData('hives-by-species', { species: speciesSlug });
+    } catch (err) {
+      console.warn('Fallback direto ao Supabase para hives por espécie:', err);
+      const { data, error } = await _publicClient
+        .from('hives')
+        .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
+        .eq('status', 'approved')
+        .eq('species_slug', speciesSlug);
+      if (error) throw new Error(`getApprovedHivesBySpecies: ${error.message}`);
+      return data;
+    }
   },
 
   async getHiveBySlug(slug) {
-    const { data, error } = await _publicClient
-      .from('hives')
-      .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
-      .eq('public_slug', slug)
-      .eq('status', 'approved')
-      .single();
-    if (error) throw new Error(`getHiveBySlug: ${error.message}`);
-    return data;
+    try {
+      return await fetchPublicData('hive', { slug });
+    } catch (err) {
+      console.warn('Fallback direto ao Supabase para hive:', err);
+      const { data, error } = await _publicClient
+        .from('hives')
+        .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
+        .eq('public_slug', slug)
+        .eq('status', 'approved')
+        .single();
+      if (error) throw new Error(`getHiveBySlug: ${error.message}`);
+      return data;
+    }
   },
 
   // ── User hive management ──────────────────────────────────────────

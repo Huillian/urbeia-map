@@ -7,3 +7,8 @@
   from = "/h/:slug"
   to = "/.netlify/functions/hive-meta?slug=:slug"
   status = 200
+
+[[redirects]]
+  from = "/api/public-data"
+  to = "/.netlify/functions/public-data"
+  status = 200

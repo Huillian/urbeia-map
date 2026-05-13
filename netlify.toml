@@ -12,3 +12,6 @@
   from = "/api/public-data"
   to = "/.netlify/functions/public-data"
   status = 200
+
+[functions."keep-supabase-awake"]
+  schedule = "@daily"

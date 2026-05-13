@@ -9,6 +9,14 @@ const _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true },
 });
 
+const _publicClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+});
+
 // Exposed for auth.js and other modules that need the raw client
 window._urbeiaClient = _client;
 
@@ -16,7 +24,7 @@ window.urbeiaDB = {
 
   // ── Species ──────────────────────────────────────────────────────
   async getSpecies() {
-    const { data, error } = await _client
+    const { data, error } = await _publicClient
       .from('species')
       .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt, family_tribe, urban_indication, behavior, description, observations, nesting_type, key_plants, conservation_status, best_use, occurrence_regions')
       .order('name_pt');
@@ -27,7 +35,7 @@ window.urbeiaDB = {
   // ── Public hive queries ───────────────────────────────────────────
   // owner_email excluído intencionalmente — nunca retornado ao cliente público
   async getApprovedHives() {
-    const { data, error } = await _client
+    const { data, error } = await _publicClient
       .from('hives')
       .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
       .eq('status', 'approved');
@@ -36,7 +44,7 @@ window.urbeiaDB = {
   },
 
   async getApprovedHivesBySpecies(speciesSlug) {
-    const { data, error } = await _client
+    const { data, error } = await _publicClient
       .from('hives')
       .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
       .eq('status', 'approved')
@@ -46,7 +54,7 @@ window.urbeiaDB = {
   },
 
   async getHiveBySlug(slug) {
-    const { data, error } = await _client
+    const { data, error } = await _publicClient
       .from('hives')
       .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
       .eq('public_slug', slug)
@@ -145,13 +153,23 @@ window.urbeiaDB = {
 
   // ── Auth ──────────────────────────────────────────────────────────
   async getSession() {
-    const { data: { session } } = await _client.auth.getSession();
-    return session;
+    try {
+      const { data: { session } } = await _client.auth.getSession();
+      return session;
+    } catch (err) {
+      console.warn('Sessão Supabase inválida ou inacessível:', err);
+      return null;
+    }
   },
 
   async getUser() {
-    const { data: { user } } = await _client.auth.getUser();
-    return user;
+    try {
+      const { data: { user } } = await _client.auth.getUser();
+      return user;
+    } catch (err) {
+      console.warn('Usuário Supabase inválido ou inacessível:', err);
+      return null;
+    }
   },
 
   async signInWithGoogle(redirectTo) {

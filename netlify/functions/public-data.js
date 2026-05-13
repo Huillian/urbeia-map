@@ -52,6 +52,14 @@ exports.handler = async event => {
       return json(200, data);
     }
 
+    if (resource === 'map') {
+      const [species, hives] = await Promise.all([
+        fetchSupabase(`species?select=${SPECIES_SELECT}&order=name_pt.asc`),
+        fetchSupabase(`hives?select=${HIVE_SELECT}&status=eq.approved`),
+      ]);
+      return json(200, { species, hives });
+    }
+
     if (resource === 'hives') {
       const data = await fetchSupabase(`hives?select=${HIVE_SELECT}&status=eq.approved`);
       return json(200, data);

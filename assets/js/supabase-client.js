@@ -5,20 +5,20 @@ const SUPABASE_URL     = 'https://eerqznktkxxuecbrsbsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcnF6bmt0a3h4dWVjYnJzYnNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTc5NzYsImV4cCI6MjA5MjM3Mzk3Nn0.wvsMf8s0M9LeJHPUagI_sqcWzxFtmnpLIt7mggsAeLY';
 const URBEIA_ADMIN_EMAIL = 'huilliancomercial@gmail.com';
 
-const _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const _client = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: false,
   },
-});
+}) : null;
 
-const _publicClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const _publicClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
   },
-});
+}) : null;
 
 async function fetchPublicData(resource, params = {}) {
   const query = new URLSearchParams({ resource, ...params });
@@ -40,11 +40,25 @@ window._urbeiaClient = _client;
 window.urbeiaDB = {
 
   // ── Species ──────────────────────────────────────────────────────
+  async getMapData() {
+    try {
+      return await fetchPublicData('map');
+    } catch (err) {
+      console.warn('Fallback para dados públicos separados:', err);
+      const [species, hives] = await Promise.all([
+        this.getSpecies(),
+        this.getApprovedHives(),
+      ]);
+      return { species, hives };
+    }
+  },
+
   async getSpecies() {
     try {
       return await fetchPublicData('species');
     } catch (err) {
       console.warn('Fallback direto ao Supabase para species:', err);
+      if (!_publicClient) throw new Error(`getSpecies: ${err.message}`);
       const { data, error } = await _publicClient
         .from('species')
         .select('slug, name_pt, name_scientific, pollination_radius_m, color_hex, size_mm, honey_yield_l_year, region_pt, family_tribe, urban_indication, behavior, description, observations, nesting_type, key_plants, conservation_status, best_use, occurrence_regions')
@@ -61,6 +75,7 @@ window.urbeiaDB = {
       return await fetchPublicData('hives');
     } catch (err) {
       console.warn('Fallback direto ao Supabase para hives:', err);
+      if (!_publicClient) throw new Error(`getApprovedHives: ${err.message}`);
       const { data, error } = await _publicClient
         .from('hives')
         .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
@@ -75,6 +90,7 @@ window.urbeiaDB = {
       return await fetchPublicData('hives-by-species', { species: speciesSlug });
     } catch (err) {
       console.warn('Fallback direto ao Supabase para hives por espécie:', err);
+      if (!_publicClient) throw new Error(`getApprovedHivesBySpecies: ${err.message}`);
       const { data, error } = await _publicClient
         .from('hives')
         .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
@@ -90,6 +106,7 @@ window.urbeiaDB = {
       return await fetchPublicData('hive', { slug });
     } catch (err) {
       console.warn('Fallback direto ao Supabase para hive:', err);
+      if (!_publicClient) throw new Error(`getHiveBySlug: ${err.message}`);
       const { data, error } = await _publicClient
         .from('hives')
         .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
@@ -103,6 +120,7 @@ window.urbeiaDB = {
 
   // ── User hive management ──────────────────────────────────────────
   async getUserHives() {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { data: { user } } = await _client.auth.getUser();
     if (!user) throw new Error('Não autenticado');
     const { data, error } = await _client
@@ -115,6 +133,7 @@ window.urbeiaDB = {
   },
 
   async updateHive(id, patch) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { data: { user } } = await _client.auth.getUser();
     if (!user) throw new Error('Não autenticado');
 
@@ -130,12 +149,14 @@ window.urbeiaDB = {
   },
 
   async deleteHive(id) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client.from('hives').delete().eq('id', id);
     if (error) throw new Error(`deleteHive: ${error.message}`);
   },
 
   // ── Submit (insert) ───────────────────────────────────────────────
   async submitHive(hiveData) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client
       .from('hives')
       .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false });
@@ -144,6 +165,7 @@ window.urbeiaDB = {
 
   // Admin bypass: insert then immediately approve + optionally verify
   async submitHiveAdmin(hiveData, isVerified) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { data, error } = await _client
       .from('hives')
       .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false })
@@ -158,6 +180,7 @@ window.urbeiaDB = {
 
   // ── Storage ───────────────────────────────────────────────────────
   async uploadPhoto(file) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { data: { user } } = await _client.auth.getUser();
     if (!user) throw new Error('uploadPhoto: usuário não autenticado');
 
@@ -172,6 +195,7 @@ window.urbeiaDB = {
 
   async getPhotoUrl(pathOrUrl) {
     if (!pathOrUrl) return null;
+    if (!_client) throw new Error('Cliente Supabase indisponível');
 
     let path = pathOrUrl;
     const marker = '/hive-photos/';
@@ -190,6 +214,7 @@ window.urbeiaDB = {
 
   // ── Auth ──────────────────────────────────────────────────────────
   async getSession() {
+    if (!_client) return null;
     try {
       const { data: { session } } = await _client.auth.getSession();
       return session;
@@ -200,6 +225,7 @@ window.urbeiaDB = {
   },
 
   async getUser() {
+    if (!_client) return null;
     try {
       const { data: { user } } = await _client.auth.getUser();
       return user;
@@ -210,6 +236,7 @@ window.urbeiaDB = {
   },
 
   async signInWithGoogle(redirectTo) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: redirectTo || `${location.origin}/index.html` },
@@ -218,20 +245,24 @@ window.urbeiaDB = {
   },
 
   async signInWithEmail(email, password) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client.auth.signInWithPassword({ email, password });
     if (error) throw error;
   },
 
   async signUp(email, password) {
+    if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client.auth.signUp({ email, password });
     if (error) throw error;
   },
 
   async signOut() {
+    if (!_client) return;
     await _client.auth.signOut();
   },
 
   onAuthChange(cb) {
+    if (!_client) return { data: { subscription: { unsubscribe() {} } } };
     return _client.auth.onAuthStateChange(cb);
   },
 };

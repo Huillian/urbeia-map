@@ -240,9 +240,9 @@ function buildSitePopup(group) {
 
 function markerAsset(group) {
   if (group.isAggregate) {
-    return group.hasVerified ? 'assets/img/meliponario-urbeia.png' : 'assets/img/meliponario-comunidade.png';
+    return group.hasVerified ? 'assets/img/pin-meliponario-urbeia.webp' : 'assets/img/pin-meliponario-comunidade.webp';
   }
-  return group.hasVerified ? 'assets/img/caixa-urbeia.png' : 'assets/img/caixa-comunidade.png';
+  return group.hasVerified ? 'assets/img/pin-caixa-urbeia.webp' : 'assets/img/pin-caixa-comunidade.webp';
 }
 
 function isMobileMap() {
@@ -434,10 +434,7 @@ async function initMap() {
   showLoadingState(true);
 
   try {
-    const [species, hives] = await Promise.all([
-      window.urbeiaDB.getSpecies(),
-      window.urbeiaDB.getApprovedHives(),
-    ]);
+    const { species, hives } = await window.urbeiaDB.getMapData();
 
     window.urbeiaSpecies.init(species);
 

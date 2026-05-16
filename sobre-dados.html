@@ -315,6 +315,9 @@
       <a href="#origem">Origem</a>
       <a href="#metodologia">Metodologia</a>
       <a href="#privacidade">Privacidade</a>
+      <a href="#lgpd">LGPD</a>
+      <a href="#direitos">Direitos</a>
+      <a href="#terceiros">Terceiros</a>
       <a href="#moderacao">Moderação</a>
       <a href="#licenca">Licença</a>
       <a href="#limites">Limitações</a>
@@ -354,13 +357,59 @@
       <section class="docs-section" id="privacidade">
         <h2>Privacidade e localização</h2>
         <p>
-          A localização exata de uma caixa pode expor propriedade privada, manejo e segurança da colônia. Por isso, registros públicos podem ser exibidos com localização aproximada, deslocada visualmente no mapa.
+          A localização exata de uma caixa pode expor propriedade privada, manejo e segurança da colônia. Por isso, quando a pessoa escolhe proteger localização, as consultas públicas recebem apenas coordenadas aproximadas. A coordenada exata fica restrita ao usuário dono do cadastro e à administração para moderação.
         </p>
         <ul class="docs-list">
-          <li>Dados pessoais sensíveis não são exibidos no mapa público.</li>
-          <li>E-mail do criador não é retornado nas consultas públicas.</li>
+          <li>Não coletamos CPF, documento, telefone ou endereço completo no cadastro público.</li>
+          <li>E-mail, identificador de conta e dados de autenticação não são retornados nas consultas públicas.</li>
           <li>Quando a localização é aproximada, o mapa informa essa condição ao usuário.</li>
-          <li>Exportações públicas futuras devem preservar o mesmo princípio de privacidade.</li>
+          <li>Exportações públicas usam a mesma fonte sanitizada do mapa e não incluem registros pendentes.</li>
+        </ul>
+      </section>
+
+      <section class="docs-section" id="lgpd">
+        <h2>Tratamento de dados pessoais e LGPD</h2>
+        <p>
+          O Urbeia Map trata dados pessoais mínimos para autenticar usuários, moderar contribuições, publicar registros aprovados e manter a integridade do mapa. O controlador dos dados é a Urbeia, representada neste projeto pelo canal <a href="mailto:huilliancomercial@gmail.com" style="color:var(--orange)">huilliancomercial@gmail.com</a>, usado também para solicitações de privacidade e comunicação com titulares.
+        </p>
+        <ul class="docs-list">
+          <li><strong>Versão do aviso:</strong> 2026-05-16.</li>
+          <li><strong>Dados de conta:</strong> e-mail e dados do provedor de login são usados para autenticação, prevenção de abuso e contato operacional.</li>
+          <li><strong>Dados publicados:</strong> nome público, apelido da caixa, cidade, espécie, observação, data de instalação, foto aprovada e localização pública podem aparecer no mapa.</li>
+          <li><strong>Dados restritos:</strong> e-mail, identificador interno de usuário, registros pendentes/rejeitados e coordenada exata protegida ficam restritos à área autenticada e à administração.</li>
+          <li><strong>Bases legais:</strong> consentimento para publicação do registro no mapa; execução de procedimentos solicitados pelo usuário para cadastro e autenticação; legítimo interesse para moderação, segurança e prevenção de abuso; cumprimento de obrigação legal quando aplicável.</li>
+          <li><strong>Retenção:</strong> registros ativos ficam armazenados enquanto a conta ou caixa existir. Caixas excluídas deixam de ser publicadas. Logs técnicos, backups e registros necessários para segurança, auditoria ou obrigação legal podem ser mantidos pelo prazo necessário à finalidade.</li>
+        </ul>
+        <div class="docs-note">
+          Este aviso de privacidade deve ser revisto sempre que mudarem finalidade, campos coletados, fornecedores ou forma de publicação dos dados.
+        </div>
+      </section>
+
+      <section class="docs-section" id="direitos">
+        <h2>Direitos do titular</h2>
+        <p>
+          O titular pode acessar, corrigir e excluir suas caixas em "Minhas caixas". Pedidos adicionais devem ser enviados para <a href="mailto:huilliancomercial@gmail.com" style="color:var(--orange)">huilliancomercial@gmail.com</a>. A solicitação pode exigir confirmação de identidade para proteger a própria conta.
+        </p>
+        <ul class="docs-list">
+          <li>Confirmação da existência de tratamento e acesso aos dados pessoais.</li>
+          <li>Correção de dados incompletos, inexatos ou desatualizados.</li>
+          <li>Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em desconformidade.</li>
+          <li>Informação sobre compartilhamento com fornecedores usados na operação do serviço.</li>
+          <li>Revogação do consentimento e eliminação dos dados tratados com base em consentimento, observadas hipóteses legais de conservação.</li>
+          <li>Oposição a tratamento realizado com base em legítimo interesse, quando cabível.</li>
+        </ul>
+      </section>
+
+      <section class="docs-section" id="terceiros">
+        <h2>Terceiros, cookies e segurança</h2>
+        <p>
+          O serviço usa fornecedores necessários à operação: Supabase para banco de dados, autenticação e armazenamento; Netlify para hospedagem e funções; serviços de mapas para exibição cartográfica; Google quando o usuário escolhe login social; e CDNs/fontes necessários à interface. Esses fornecedores podem tratar dados técnicos como IP, logs de acesso, identificadores de sessão, dados de dispositivo e páginas acessadas.
+        </p>
+        <ul class="docs-list">
+          <li>Cookies, localStorage e tokens de sessão podem ser usados para manter login, tema visual e funcionamento básico do site.</li>
+          <li>Fotos enviadas devem ser da própria caixa e não devem conter pessoas identificáveis, placas, documentos, endereços completos ou dados sensíveis.</li>
+          <li>O cadastro deve ser feito por pessoa maior de 18 anos ou com autorização de responsável legal.</li>
+          <li>Em caso de incidente de segurança relevante, o projeto avaliará risco aos titulares e adotará comunicações cabíveis.</li>
         </ul>
       </section>
 
@@ -380,7 +429,7 @@
       <section class="docs-section" id="licenca">
         <h2>Licença e uso dos dados</h2>
         <p>
-          O código do projeto é publicado sob licença MIT. Os dados públicos do mapa são tratados como dados abertos sob CC-BY 4.0, respeitando privacidade, moderação e atribuição adequada ao Urbeia Map.
+          O código do projeto é publicado sob licença MIT. Os dados públicos aprovados e sanitizados do mapa podem ser usados sob CC-BY 4.0, respeitando privacidade, moderação, atribuição adequada ao Urbeia Map e pedidos válidos de remoção ou correção feitos por titulares.
         </p>
         <p>
           Parceiros educacionais, pesquisadores e instituições podem usar os dados públicos para comunicação ambiental, análise territorial e materiais de educação, desde que mantenham contexto, fonte e limitações metodológicas.

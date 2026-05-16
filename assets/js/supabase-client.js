@@ -160,7 +160,7 @@ window.urbeiaDB = {
         ...hiveData,
         status: 'pending',
         is_urbeia_verified: false,
-        privacy_notice_version: '2026-05-14',
+        privacy_notice_version: '2026-05-16',
         privacy_accepted_at: new Date().toISOString(),
       });
     if (error) throw new Error(`submitHive: ${error.message}`);
@@ -175,7 +175,7 @@ window.urbeiaDB = {
         ...hiveData,
         status: 'pending',
         is_urbeia_verified: false,
-        privacy_notice_version: '2026-05-14',
+        privacy_notice_version: '2026-05-16',
         privacy_accepted_at: new Date().toISOString(),
       })
       .select('id')

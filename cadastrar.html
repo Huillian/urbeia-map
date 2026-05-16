@@ -821,7 +821,7 @@
               aria-label="Foto da caixa"
             />
             <p class="photo-upload-label"><strong>Clique para selecionar</strong> ou arraste aqui</p>
-            <p class="photo-upload-sub">JPG · PNG · WebP · máx 5MB</p>
+            <p class="photo-upload-sub">JPG · PNG · WebP · máx 5MB · sem pessoas, placas, documentos ou endereços visíveis</p>
           </div>
           <div id="photo-preview"></div>
           <div class="field-error" id="photo-error" role="alert"></div>
@@ -845,10 +845,23 @@
             <div class="toggle-text">
               <span class="toggle-label">Proteger localização</span>
               <span class="toggle-desc">
-                O pin será deslocado ~200m aleatórios. Recomendado para endereços residenciais.
+                A posição pública será aproximada e as coordenadas exatas não serão publicadas.
               </span>
             </div>
           </label>
+        </div>
+
+        <div class="field-group">
+          <label class="toggle-field" for="field-privacy">
+            <input type="checkbox" id="field-privacy" required aria-describedby="privacy-desc" />
+            <div class="toggle-text">
+              <span class="toggle-label">Li e concordo com o tratamento dos dados</span>
+              <span class="toggle-desc" id="privacy-desc">
+                Declaro ter 18 anos ou autorização do responsável. Nome público, observação, cidade, espécie, foto aprovada e localização pública podem aparecer no mapa. E-mail, conta e coordenada exata protegida são usados para autenticação, moderação, segurança e contato operacional.
+              </span>
+            </div>
+          </label>
+          <div class="field-error" id="error-privacy" role="alert"></div>
         </div>
 
         <!-- Submit -->
@@ -866,7 +879,7 @@
         <div class="field-error" id="error-submit" role="alert"></div>
 
         <p class="submit-note">
-          Ao enviar, você concorda que os dados serão exibidos publicamente (exceto e-mail).
+          Você pode editar ou excluir suas caixas em "Minhas caixas" e exercer direitos de titular pela página <a href="sobre-dados.html#direitos" style="color:var(--orange)">Sobre os dados</a>.
           Licença <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--orange)">CC-BY 4.0</a>.
         </p>
 

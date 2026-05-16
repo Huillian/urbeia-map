@@ -4,6 +4,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const SPECIES_SELECT = 'slug,name_pt,name_scientific,pollination_radius_m,color_hex,size_mm,honey_yield_l_year,region_pt,family_tribe,urban_indication,behavior,description,observations,nesting_type,key_plants,conservation_status,best_use,occurrence_regions';
 const HIVE_SELECT = 'id,public_slug,lat,lng,nickname,species_slug,is_urbeia_verified,approximate_location,owner_name,note,installed_at,city,state';
 const HIVE_DETAIL_SELECT = `${HIVE_SELECT},photo_url`;
+const PUBLIC_HIVES_TABLE = 'public_hives';
 
 const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
@@ -55,13 +56,13 @@ exports.handler = async event => {
     if (resource === 'map') {
       const [species, hives] = await Promise.all([
         fetchSupabase(`species?select=${SPECIES_SELECT}&order=name_pt.asc`),
-        fetchSupabase(`hives?select=${HIVE_SELECT}&status=eq.approved`),
+        fetchSupabase(`${PUBLIC_HIVES_TABLE}?select=${HIVE_SELECT}`),
       ]);
       return json(200, { species, hives });
     }
 
     if (resource === 'hives') {
-      const data = await fetchSupabase(`hives?select=${HIVE_SELECT}&status=eq.approved`);
+      const data = await fetchSupabase(`${PUBLIC_HIVES_TABLE}?select=${HIVE_SELECT}`);
       return json(200, data);
     }
 
@@ -70,7 +71,7 @@ exports.handler = async event => {
       if (!slug) return json(400, { error: 'Missing species' });
 
       const data = await fetchSupabase(
-        `hives?select=${HIVE_DETAIL_SELECT}&status=eq.approved&species_slug=eq.${encodeURIComponent(slug)}`
+        `${PUBLIC_HIVES_TABLE}?select=${HIVE_DETAIL_SELECT}&species_slug=eq.${encodeURIComponent(slug)}`
       );
       return json(200, data);
     }
@@ -80,7 +81,7 @@ exports.handler = async event => {
       if (!slug) return json(400, { error: 'Missing slug' });
 
       const data = await fetchSupabase(
-        `hives?select=${HIVE_DETAIL_SELECT}&public_slug=eq.${encodeURIComponent(slug)}&status=eq.approved`,
+        `${PUBLIC_HIVES_TABLE}?select=${HIVE_DETAIL_SELECT}&public_slug=eq.${encodeURIComponent(slug)}`,
         true
       );
       return json(200, data);

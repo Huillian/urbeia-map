@@ -232,6 +232,10 @@
     <button type="button" id="btn-toggle">Criar conta</button>
   </div>
 
+  <p class="auth-msg">
+    Ao entrar ou criar conta, leia como tratamos seus dados em <a href="sobre-dados.html#lgpd" style="color:var(--orange);">privacidade e LGPD</a>.
+  </p>
+
   <a href="index.html" class="auth-back">← voltar ao mapa</a>
 </div>
 
@@ -240,7 +244,7 @@
 <script>
   // Determine where to redirect after login
   const params   = new URLSearchParams(location.search);
-  const nextPage = params.get('next') || 'index.html';
+  const nextPage = params.get('next') || 'minhas-caixas.html';
 
   // If already logged in, redirect immediately
   window.urbeiaDB.getSession().then(session => {

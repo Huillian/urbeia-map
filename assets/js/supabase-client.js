@@ -77,9 +77,8 @@ window.urbeiaDB = {
       console.warn('Fallback direto ao Supabase para hives:', err);
       if (!_publicClient) throw new Error(`getApprovedHives: ${err.message}`);
       const { data, error } = await _publicClient
-        .from('hives')
-        .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state')
-        .eq('status', 'approved');
+        .from('public_hives')
+        .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state');
       if (error) throw new Error(`getApprovedHives: ${error.message}`);
       return data;
     }
@@ -92,9 +91,8 @@ window.urbeiaDB = {
       console.warn('Fallback direto ao Supabase para hives por espécie:', err);
       if (!_publicClient) throw new Error(`getApprovedHivesBySpecies: ${err.message}`);
       const { data, error } = await _publicClient
-        .from('hives')
+        .from('public_hives')
         .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
-        .eq('status', 'approved')
         .eq('species_slug', speciesSlug);
       if (error) throw new Error(`getApprovedHivesBySpecies: ${error.message}`);
       return data;
@@ -108,10 +106,9 @@ window.urbeiaDB = {
       console.warn('Fallback direto ao Supabase para hive:', err);
       if (!_publicClient) throw new Error(`getHiveBySlug: ${err.message}`);
       const { data, error } = await _publicClient
-        .from('hives')
+        .from('public_hives')
         .select('id, public_slug, lat, lng, nickname, species_slug, is_urbeia_verified, approximate_location, owner_name, note, installed_at, city, state, photo_url')
         .eq('public_slug', slug)
-        .eq('status', 'approved')
         .single();
       if (error) throw new Error(`getHiveBySlug: ${error.message}`);
       return data;
@@ -159,7 +156,13 @@ window.urbeiaDB = {
     if (!_client) throw new Error('Cliente Supabase indisponível');
     const { error } = await _client
       .from('hives')
-      .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false });
+      .insert({
+        ...hiveData,
+        status: 'pending',
+        is_urbeia_verified: false,
+        privacy_notice_version: '2026-05-14',
+        privacy_accepted_at: new Date().toISOString(),
+      });
     if (error) throw new Error(`submitHive: ${error.message}`);
   },
 
@@ -168,7 +171,13 @@ window.urbeiaDB = {
     if (!_client) throw new Error('Cliente Supabase indisponível');
     const { data, error } = await _client
       .from('hives')
-      .insert({ ...hiveData, status: 'pending', is_urbeia_verified: false })
+      .insert({
+        ...hiveData,
+        status: 'pending',
+        is_urbeia_verified: false,
+        privacy_notice_version: '2026-05-14',
+        privacy_accepted_at: new Date().toISOString(),
+      })
       .select('id')
       .single();
     if (error) throw new Error(`submitHiveAdmin insert: ${error.message}`);
